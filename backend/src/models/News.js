@@ -10,6 +10,7 @@ const newsSchema = new mongoose.Schema({
   seoMetaTitle: { type: String },
   seoMetaDescription: { type: String },
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },
+  isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('News', newsSchema);

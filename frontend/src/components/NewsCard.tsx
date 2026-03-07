@@ -1,29 +1,36 @@
-import Link from 'next/link';
-import { formatDistance } from 'date-fns'; // We will install date-fns later if needed, but for now we can use simple JS dates or native Intl.RelativeTimeFormat.
-// Actually, let's use standard JS to avoid new deps for now.
+import Link from "next/link";
 
-export default function NewsCard({ article }: { article: any }) {
-    const dateStr = new Date(article.createdAt).toLocaleDateString();
+interface NewsItem {
+    _id: string;
+    title: string;
+    slug: string;
+    summary: string;
+    createdAt: string;
+}
+
+export default function NewsCard({ news }: { news: NewsItem }) {
+    const date = new Date(news.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
-            <div className="p-6">
-                <div className="flex space-x-2 text-sm text-gray-400 mb-3">
-                    <span>{dateStr}</span>
-                    {article.tags?.length > 0 && (
-                        <>
-                            <span>&bull;</span>
-                            <span className="text-blue-500">{article.tags[0]}</span>
-                        </>
-                    )}
+        <article className="group border-b border-border py-8 first:pt-0 last:border-0 transition-colors hover:bg-muted/10">
+            <Link href={`/news/${news.slug}`} className="block h-full">
+                <div className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-3">
+                    <h3 className="font-sans text-2xl font-bold text-foreground group-hover:underline decoration-1 underline-offset-4 mb-2 md:mb-0 md:mr-6 line-clamp-2 md:line-clamp-none">
+                        {news.title}
+                    </h3>
+                    <time className="text-xs tracking-wide text-muted-foreground whitespace-nowrap uppercase font-medium mt-1 md:mt-0">
+                        {date}
+                    </time>
                 </div>
-                <Link href={`/news/${article.slug}`}>
-                    <h3 className="text-xl font-bold mb-2 hover:text-blue-500 transition-colors">{article.title}</h3>
-                </Link>
-                <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
-                    {article.summary}
+
+                <p className="text-muted-foreground leading-relaxed line-clamp-3 md:line-clamp-2 max-w-4xl">
+                    {news.summary}
                 </p>
-            </div>
-        </div>
+            </Link>
+        </article>
     );
 }

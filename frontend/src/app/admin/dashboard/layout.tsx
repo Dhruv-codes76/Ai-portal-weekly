@@ -32,13 +32,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">Admin Control</span>
                     </div>
                     <nav className="flex-1 px-4 py-6 space-y-2 text-sm font-medium">
-                        <Link href="/dashboard" className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                        <Link href="/admin/dashboard" className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
                             Overview
                         </Link>
-                        <Link href="/dashboard/news" className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                        <Link href="/admin/news" className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
                             Manage News
                         </Link>
-                        <Link href="/dashboard/tools" className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                        <Link href="/admin/tools" className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
                             Manage Tools
                         </Link>
                     </nav>

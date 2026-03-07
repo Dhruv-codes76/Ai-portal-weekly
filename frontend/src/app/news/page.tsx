@@ -1,50 +1,39 @@
-import NewsCard from '@/components/NewsCard';
-import Link from 'next/link';
-import { getNews } from '@/lib/api';
+import NewsCard from "@/components/NewsCard";
 
+async function getNews() {
+    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/news`;
+    const res = await fetch(url, { next: { revalidate: 10 } }); // Revalidate every 10 seconds for MVP
+    if (!res.ok) {
+        console.error("Failed to fetch news:", res.status);
+        return { data: [] };
+    }
+    return res.json();
+}
 
 export const metadata = {
-    title: 'AI News | Latest Updates in Artificial Intelligence',
-    description: 'Read the latest news and updates about Artificial Intelligence, machine learning, and new AI tools.',
+    title: "Latest AI News | Editorial",
+    description: "Read the latest beginner-friendly, unbiased AI news.",
 };
 
-export default async function NewsListing({
-    searchParams,
-}: {
-    searchParams: Promise<{ page?: string }>
-}) {
-    const resolvedParams = await searchParams;
-    const currentPage = Number(resolvedParams?.page) || 1;
-    const { data: news, totalPages } = await getNews(currentPage);
+export default async function NewsPage() {
+    const { data: newsItems } = await getNews();
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="mb-12">
-                <h1 className="text-4xl font-extrabold mb-4">AI News</h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300">
-                    Stay informed with the latest developments in artificial intelligence.
-                </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="border-b-4 border-foreground pb-6 mb-12">
+                <h1 className="text-5xl font-sans font-bold tracking-tight mb-4">AI News Directory</h1>
+                <p className="text-muted-foreground text-lg italic font-sans">The signal, cleanly separated from the noise.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                {news?.length > 0 ? (
-                    news.map((article: any) => <NewsCard key={article._id} article={article} />)
-                ) : (
-                    <p className="text-gray-500 col-span-3">No news available.</p>
-                )}
-            </div>
-
-            {totalPages > 1 && (
-                <div className="flex justify-center flex-wrap gap-2">
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                        <Link
-                            key={i}
-                            href={`/news?page=${i + 1}`}
-                            className={`px-4 py-2 border rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${currentPage === i + 1 ? 'bg-blue-50 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-100' : 'border-gray-200 dark:border-gray-700'}`}
-                        >
-                            {i + 1}
-                        </Link>
+            {newsItems && newsItems.length > 0 ? (
+                <div className="flex flex-col">
+                    {newsItems.map((item: any) => (
+                        <NewsCard key={item._id} news={item} />
                     ))}
+                </div>
+            ) : (
+                <div className="py-20 border border-dashed border-border text-center">
+                    <h3 className="text-2xl font-sans text-muted-foreground italic">No transmissions available.</h3>
                 </div>
             )}
         </div>

@@ -1,75 +1,74 @@
-import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
-import { getToolBySlug } from '@/lib/api';
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
+async function getTool(slug: string) {
+    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools/${slug}`;
+    const res = await fetch(url, { next: { revalidate: 10 } });
+    if (!res.ok) {
+        if (res.status === 404) return null;
+        throw new Error('Failed to fetch data');
+    }
+    return res.json();
+}
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-    const resolvedParams = await params;
-    const tool = await getToolBySlug(resolvedParams.slug);
-
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+    const tool = await getTool(params.slug);
     if (!tool) return { title: 'Not Found' };
 
     return {
-        title: tool.seoMetaTitle || `${tool.name} | AI Tools`,
+        title: `${tool.seoMetaTitle || tool.name} | AI Tools`,
         description: tool.seoMetaDescription || tool.description,
     };
 }
 
-export default async function ToolDetail({ params }: { params: Promise<{ slug: string }> }) {
-    const resolvedParams = await params;
-    const tool = await getToolBySlug(resolvedParams.slug);
+export default async function SingleToolPage({ params }: { params: { slug: string } }) {
+    const tool = await getTool(params.slug);
 
     if (!tool) {
         notFound();
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 sm:p-12">
-                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-3">
-                            {tool.verified && (
-                                <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                                    Verified
-                                </span>
-                            )}
-                            <span className="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300">
-                                {tool.category?.name || 'Tool'}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <Link href="/tools" className="inline-block text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground mb-12 transition-colors">
+                &larr; Catalog
+            </Link>
+
+            <article>
+                <header className="border-b-4 border-foreground pb-10 mb-12">
+                    <h1 className="text-5xl md:text-7xl font-sans font-bold tracking-tight leading-none mb-8 text-foreground">
+                        {tool.name}
+                    </h1>
+
+                    <div className="flex flex-wrap items-center gap-4 text-xs font-bold tracking-widest uppercase">
+                        {tool.category && (
+                            <span className="px-3 py-1.5 border border-border text-muted-foreground">
+                                {tool.category.name}
                             </span>
-                        </div>
-                        <h1 className="text-4xl font-extrabold">{tool.name}</h1>
-                    </div>
-                    <div className="flex flex-col items-end">
-                        <span className="text-lg font-medium text-green-600 dark:text-green-400 mb-2">
-                            {tool.pricing.charAt(0).toUpperCase() + tool.pricing.slice(1)}
+                        )}
+                        <span className="px-3 py-1.5 border border-foreground text-foreground flex items-center">
+                            Pricing: {tool.pricing || "Free / Freemium"}
                         </span>
-                        <a
-                            href={tool.affiliateLink || tool.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-center inline-block w-full sm:w-auto"
-                        >
-                            Visit Website
-                        </a>
                     </div>
                 </header>
 
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                    <p className="lead text-2xl text-gray-700 dark:text-gray-200 mb-8 font-medium">
-                        {tool.description}
-                    </p>
-
-                    <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-wrap gap-2">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mr-2">Tags:</span>
-                        {tool.tags?.map((tag: string) => (
-                            <span key={tag} className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-600 dark:text-gray-300">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
+                <div className="prose prose-lg dark:prose-invert max-w-none mb-16 whitespace-pre-wrap font-sans text-muted-foreground leading-loose">
+                    {tool.description}
                 </div>
-            </div>
+
+                {tool.website && (
+                    <footer className="pt-10 border-t border-border flex justify-center">
+                        <a
+                            href={tool.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block px-10 py-5 bg-foreground text-background font-bold tracking-widest uppercase text-sm hover:bg-background hover:text-foreground border-2 border-transparent hover:border-foreground transition-all text-center w-full md:w-auto"
+                        >
+                            Navigate to Website
+                        </a>
+                    </footer>
+                )}
+            </article>
         </div>
     );
 }

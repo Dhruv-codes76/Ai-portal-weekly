@@ -1,25 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const Admin = require('../models/Admin');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { authMiddleware } = require('../middleware/auth');
+const { loginLimiter, adminLimiter } = require('../middleware/rateLimiter');
+const {
+    loginAdmin,
+    logoutAdmin,
+    createAdmin,
+    getAdmins,
+    deactivateAdmin,
+    restoreAdmin
+} = require('../controllers/adminController');
 
-// POST /api/admin/login
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const admin = await Admin.findOne({ email });
-        if (!admin) return res.status(400).json({ error: 'Invalid credentials' });
-
-        const validPassword = await bcrypt.compare(password, admin.passwordHash);
-        if (!validPassword) return res.status(400).json({ error: 'Invalid credentials' });
-
-        const token = jwt.sign({ _id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token, email: admin.email });
-    } catch (error) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+router.post('/login', loginLimiter, loginAdmin);
+router.post('/logout', authMiddleware, logoutAdmin);
+router.post('/', authMiddleware, adminLimiter, createAdmin);
+router.get('/', authMiddleware, adminLimiter, getAdmins);
+router.delete('/:id', authMiddleware, adminLimiter, deactivateAdmin);
+router.put('/:id/restore', authMiddleware, adminLimiter, restoreAdmin);
 
 module.exports = router;

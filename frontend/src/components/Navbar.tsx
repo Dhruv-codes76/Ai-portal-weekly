@@ -1,24 +1,55 @@
-import Link from 'next/link';
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+    const pathname = usePathname();
+
+    const navLinks = [
+        { name: "Home", href: "/" },
+        { name: "News", href: "/news" },
+        { name: "Tools", href: "/tools" },
+    ];
+
     return (
-        <nav className="border-b bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+        <nav className="fixed top-0 inset-x-0 z-50 bg-background border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    <div className="flex-shrink-0 flex items-center">
-                        <Link href="/" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+                <div className="flex justify-between items-center h-20">
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center">
+                        <span className="font-sans font-bold text-3xl tracking-tight text-foreground">
                             AI MVP
-                        </Link>
+                        </span>
+                    </Link>
+
+                    {/* Desktop Nav */}
+                    <div className="hidden md:flex space-x-8 items-center">
+                        {navLinks.map((link) => {
+                            const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+                            return (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    className={`text-sm tracking-wide transition-colors relative group py-2 ${isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                                        }`}
+                                >
+                                    {link.name}
+                                    {/* Minimal underline hover effect typical of editorial design */}
+                                    <span className={`absolute left-0 bottom-0 w-full h-px transition-all duration-300 ${isActive ? 'bg-foreground' : 'bg-transparent group-hover:bg-muted-foreground'
+                                        }`}></span>
+                                </Link>
+                            );
+                        })}
                     </div>
-                    <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <Link href="/news" className="text-gray-900 dark:text-gray-100 hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium">
-                            News
-                        </Link>
-                        <Link href="/tools" className="text-gray-900 dark:text-gray-100 hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium">
-                            Tools
-                        </Link>
-                        <Link href="/about" className="text-gray-900 dark:text-gray-100 hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium">
-                            About
+
+                    {/* Admin / Login */}
+                    <div className="flex items-center">
+                        <Link
+                            href="/admin/login"
+                            className="text-sm tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            Admin
                         </Link>
                     </div>
                 </div>
