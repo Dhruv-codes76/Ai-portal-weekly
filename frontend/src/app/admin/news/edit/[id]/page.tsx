@@ -4,6 +4,9 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SEOEditor from "@/components/admin/SEOEditor";
+import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 export default function EditNewsPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -20,6 +23,17 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
         content: "",
         sourceLink: "",
         status: "draft",
+        seoMetaTitle: "",
+        seoMetaDescription: "",
+        canonicalUrl: "",
+        ogTitle: "",
+        ogDescription: "",
+        ogImage: "",
+        twitterTitle: "",
+        twitterDescription: "",
+        twitterImage: "",
+        featuredImage: "",
+        featuredImageAlt: "",
     });
 
     useEffect(() => {
@@ -54,6 +68,17 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                     content: article.content || "",
                     sourceLink: article.sourceLink || "",
                     status: article.status || "draft",
+                    seoMetaTitle: article.seoMetaTitle || "",
+                    seoMetaDescription: article.seoMetaDescription || "",
+                    canonicalUrl: article.canonicalUrl || "",
+                    ogTitle: article.ogTitle || "",
+                    ogDescription: article.ogDescription || "",
+                    ogImage: article.ogImage || "",
+                    twitterTitle: article.twitterTitle || "",
+                    twitterDescription: article.twitterDescription || "",
+                    twitterImage: article.twitterImage || "",
+                    featuredImage: article.featuredImage || "",
+                    featuredImageAlt: article.featuredImageAlt || "",
                 });
             } catch (err: any) {
                 setError(err.message);
@@ -132,8 +157,14 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-10">
+                <FeaturedImagePortal 
+                    imageUrl={formData.featuredImage}
+                    imageAlt={formData.featuredImageAlt}
+                    onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
                     <div className="space-y-2">
                         <label className="text-sm font-bold tracking-widest uppercase block">Headline</label>
                         <input
@@ -171,15 +202,15 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-bold tracking-widest uppercase block">Full Content Markdown</label>
-                    <textarea
-                        required
-                        name="content"
-                        rows={12}
-                        value={formData.content}
-                        onChange={handleChange}
-                        className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors resize-y font-mono text-sm leading-relaxed"
-                    />
+                    <label className="text-sm font-bold tracking-widest uppercase block mb-2">Full Content (Intel Feed)</label>
+                    {/* Only render editor once data is fetched to avoid initialization issues */}
+                    {!fetching && (
+                        <RichTextEditor 
+                            content={formData.content}
+                            onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
+                            placeholder="Start typing your intelligence brief here..."
+                        />
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -205,6 +236,16 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                             <option value="published" className="bg-background">Published</option>
                         </select>
                     </div>
+                </div>
+
+                <div className="pt-8 border-t border-border">
+                    <h2 className="text-2xl font-bold mb-6 uppercase tracking-tight">Search Engine Optimization (SEO)</h2>
+                    <SEOEditor 
+                        data={formData} 
+                        onChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
+                        baseSlug={formData.slug}
+                        type="news"
+                    />
                 </div>
 
                 <div className="pt-8 border-t border-border flex justify-end">

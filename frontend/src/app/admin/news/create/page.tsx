@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import SEOEditor from "@/components/admin/SEOEditor";
+import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 export default function CreateNewsPage() {
     const router = useRouter();
@@ -15,6 +18,17 @@ export default function CreateNewsPage() {
         content: "",
         sourceLink: "",
         status: "draft",
+        seoMetaTitle: "",
+        seoMetaDescription: "",
+        canonicalUrl: "",
+        ogTitle: "",
+        ogDescription: "",
+        ogImage: "",
+        twitterTitle: "",
+        twitterDescription: "",
+        twitterImage: "",
+        featuredImage: "",
+        featuredImageAlt: "",
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -75,8 +89,14 @@ export default function CreateNewsPage() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-10">
+                <FeaturedImagePortal 
+                    imageUrl={formData.featuredImage}
+                    imageAlt={formData.featuredImageAlt}
+                    onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
                     <div className="space-y-2">
                         <label className="text-sm font-bold tracking-widest uppercase block">Headline</label>
                         <input
@@ -114,14 +134,11 @@ export default function CreateNewsPage() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-bold tracking-widest uppercase block">Full Content Markdown</label>
-                    <textarea
-                        required
-                        name="content"
-                        rows={12}
-                        value={formData.content}
-                        onChange={handleChange}
-                        className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors resize-y font-mono text-sm leading-relaxed"
+                    <label className="text-sm font-bold tracking-widest uppercase block mb-2">Full Content (Intel Feed)</label>
+                    <RichTextEditor 
+                        content={formData.content}
+                        onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
+                        placeholder="Start typing your intelligence brief here..."
                     />
                 </div>
 
@@ -148,6 +165,16 @@ export default function CreateNewsPage() {
                             <option value="published" className="bg-background">Published</option>
                         </select>
                     </div>
+                </div>
+
+                <div className="pt-8 border-t border-border">
+                    <h2 className="text-2xl font-bold mb-6 uppercase tracking-tight">Search Engine Optimization (SEO)</h2>
+                    <SEOEditor 
+                        data={formData} 
+                        onChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
+                        baseSlug={formData.slug}
+                        type="news"
+                    />
                 </div>
 
                 <div className="pt-8 border-t border-border flex justify-end">

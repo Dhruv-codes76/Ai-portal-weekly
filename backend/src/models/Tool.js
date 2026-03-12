@@ -12,6 +12,16 @@ const toolSchema = new mongoose.Schema({
     verified: { type: Boolean, default: false },
     seoMetaTitle: { type: String },
     seoMetaDescription: { type: String },
+    canonicalUrl: { type: String },
+    ogTitle: { type: String },
+    ogDescription: { type: String },
+    ogImage: { type: String },
+    twitterTitle: { type: String },
+    twitterDescription: { type: String },
+    twitterImage: { type: String },
+    keywords: [{ type: String }],
+    featuredImage: { type: String },
+    featuredImageAlt: { type: String },
     status: { type: String, enum: ['draft', 'published'], default: 'draft' },
     isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });

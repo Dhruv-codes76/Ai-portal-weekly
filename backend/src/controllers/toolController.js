@@ -1,6 +1,7 @@
 const Tool = require('../models/Tool');
 const { softDelete, restore } = require('../utils/softDelete');
 const { logActivity } = require('../utils/logger');
+const { generateSEO } = require('../utils/seoUtils');
 
 const getTools = async (req, res) => {
     try {
@@ -29,7 +30,8 @@ const getToolBySlug = async (req, res) => {
 
 const createTool = async (req, res) => {
     try {
-        const tool = new Tool(req.body);
+        const toolData = generateSEO(req.body, 'tool');
+        const tool = new Tool(toolData);
         await tool.save();
         await logActivity(req, 'CREATE', 'Tool', tool._id, { name: tool.name });
         res.status(201).json(tool);
@@ -40,7 +42,8 @@ const createTool = async (req, res) => {
 
 const updateTool = async (req, res) => {
     try {
-        const tool = await Tool.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const toolData = generateSEO(req.body, 'tool');
+        const tool = await Tool.findByIdAndUpdate(req.params.id, toolData, { new: true });
         if (tool) {
             await logActivity(req, 'UPDATE', 'Tool', tool._id, req.body);
         }

@@ -1,6 +1,7 @@
 const News = require('../models/News');
 const { softDelete, restore } = require('../utils/softDelete');
 const { logActivity } = require('../utils/logger');
+const { generateSEO } = require('../utils/seoUtils');
 
 const getNews = async (req, res) => {
     try {
@@ -36,7 +37,8 @@ const getNewsBySlug = async (req, res) => {
 
 const createNews = async (req, res) => {
     try {
-        const article = new News(req.body);
+        const articleData = generateSEO(req.body, 'news');
+        const article = new News(articleData);
         await article.save();
         await logActivity(req, 'CREATE', 'News', article._id, { title: article.title });
         res.status(201).json(article);
@@ -47,7 +49,8 @@ const createNews = async (req, res) => {
 
 const updateNews = async (req, res) => {
     try {
-        const article = await News.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const articleData = generateSEO(req.body, 'news');
+        const article = await News.findByIdAndUpdate(req.params.id, articleData, { new: true });
         if (article) {
             await logActivity(req, 'UPDATE', 'News', article._id, req.body);
         }

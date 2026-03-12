@@ -15,9 +15,29 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const tool = await getTool(params.slug);
     if (!tool) return { title: 'Not Found' };
 
+    const title = tool.seoMetaTitle || tool.name;
+    const description = tool.seoMetaDescription || tool.description;
+    const url = `https://ai-news-portal.com/tools/${tool.slug}`;
+
     return {
-        title: `${tool.seoMetaTitle || tool.name} | AI Tools`,
-        description: tool.seoMetaDescription || tool.description,
+        title: `${title} | AI Tools`,
+        description: description,
+        alternates: {
+            canonical: tool.canonicalUrl || url,
+        },
+        openGraph: {
+            title: tool.ogTitle || title,
+            description: tool.ogDescription || description,
+            url: url,
+            type: 'website',
+            images: tool.ogImage ? [{ url: tool.ogImage }] : [],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: tool.twitterTitle || title,
+            description: tool.twitterDescription || description,
+            images: tool.twitterImage ? [tool.twitterImage] : (tool.ogImage ? [tool.ogImage] : []),
+        },
     };
 }
 
@@ -30,11 +50,37 @@ export default async function SingleToolPage({ params }: { params: { slug: strin
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'SoftwareApplication',
+                    name: tool.name,
+                    description: tool.description,
+                    applicationCategory: tool.category?.name || 'MultimediaApplication',
+                    operatingSystem: 'Web',
+                    offers: {
+                        '@type': 'Offer',
+                        price: tool.pricing === 'free' ? '0' : 'Varies',
+                        priceCurrency: 'USD',
+                    },
+                }) }}
+            />
             <Link href="/tools" className="inline-block text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground mb-12 transition-colors">
                 &larr; Catalog
             </Link>
 
             <article>
+                {tool.featuredImage && (
+                    <div className="w-full aspect-video mb-12 border border-border overflow-hidden">
+                        <img 
+                            src={tool.featuredImage} 
+                            alt={tool.featuredImageAlt || tool.name} 
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                )}
+
                 <header className="border-b-4 border-foreground pb-10 mb-12">
                     <h1 className="text-5xl md:text-7xl font-sans font-bold tracking-tight leading-none mb-8 text-foreground">
                         {tool.name}
@@ -52,9 +98,10 @@ export default async function SingleToolPage({ params }: { params: { slug: strin
                     </div>
                 </header>
 
-                <div className="prose prose-lg dark:prose-invert max-w-none mb-16 whitespace-pre-wrap font-sans text-muted-foreground leading-loose">
-                    {tool.description}
-                </div>
+                <div 
+                    className="prose prose-lg dark:prose-invert max-w-none mb-16 font-sans text-muted-foreground leading-loose"
+                    dangerouslySetInnerHTML={{ __html: tool.description }}
+                />
 
                 {tool.website && (
                     <footer className="pt-10 border-t border-border flex justify-center">

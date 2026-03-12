@@ -20,6 +20,7 @@ const activityLogRoutes = require('./routes/activityLogRoutes');
 app.use('/api/admin', adminRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/tools', toolRoutes);
+app.use('/api/search', searchRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/logs', activityLogRoutes);
 
