@@ -15,6 +15,8 @@ const newsRoutes = require('./routes/newsRoutes');
 const toolRoutes = require('./routes/toolRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const activityLogRoutes = require('./routes/activityLogRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+
 
 // Use routes
 app.use('/api/admin', adminRoutes);
@@ -30,6 +32,7 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.log('MongoDB Connection Error:', err));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
+
