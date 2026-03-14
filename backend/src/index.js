@@ -5,6 +5,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy for rate limiters backing onto Render/Nginx
 app.use(morgan('dev')); // HTTP request logger
 app.use(express.json());
 app.use(cors());
