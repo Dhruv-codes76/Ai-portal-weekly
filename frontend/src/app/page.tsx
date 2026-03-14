@@ -2,31 +2,11 @@ import Link from "next/link";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import NewsCard from "@/components/NewsCard";
 import ToolCard from "@/components/ToolCard";
-
-async function getLatestNews() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/news?limit=3`, { next: { revalidate: 10 } });
-    if (!res.ok) return { data: [] };
-    return res.json();
-  } catch (e) {
-    return { data: [] };
-  }
-}
-
-async function getLatestTools() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools`, { next: { revalidate: 10 } });
-    if (!res.ok) return [];
-    const allTools = await res.json();
-    return allTools.slice(0, 4);
-  } catch (e) {
-    return [];
-  }
-}
+import { getNews, getTools } from "@/lib/api";
 
 export default async function Home() {
-  const { data: latestNews } = await getLatestNews();
-  const latestTools = await getLatestTools();
+  const { data: latestNews } = await getNews(1, 3);
+  const { data: latestTools } = await getTools(1, 4);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center selection:bg-foreground selection:text-background">

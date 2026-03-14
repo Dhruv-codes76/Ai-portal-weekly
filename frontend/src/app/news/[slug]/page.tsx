@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-async function getArticle(slug: string) {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/news/${slug}`;
-    const res = await fetch(url, { next: { revalidate: 10 } });
-    if (!res.ok) {
-        if (res.status === 404) return null;
-        throw new Error('Failed to fetch data');
-    }
-    return res.json();
-}
+import { getNewsBySlug } from "@/lib/api";
+import BackLink from "@/components/BackLink";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const article = await getArticle(params.slug);
+    const article = await getNewsBySlug(params.slug);
     if (!article) return { title: 'Not Found' };
 
     const title = article.seoMetaTitle || article.title;
@@ -43,7 +35,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function SingleNewsPage({ params }: { params: { slug: string } }) {
-    const article = await getArticle(params.slug);
+    const article = await getNewsBySlug(params.slug);
 
     if (!article) {
         notFound();
@@ -73,9 +65,7 @@ export default async function SingleNewsPage({ params }: { params: { slug: strin
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <Link href="/news" className="inline-block text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground mb-12 transition-colors">
-                &larr; Directory
-            </Link>
+            <BackLink href="/news" label="Directory" />
 
             <article>
                 {article.featuredImage && (

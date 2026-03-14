@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-async function getTool(slug: string) {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools/${slug}`;
-    const res = await fetch(url, { next: { revalidate: 10 } });
-    if (!res.ok) {
-        if (res.status === 404) return null;
-        throw new Error('Failed to fetch data');
-    }
-    return res.json();
-}
+import { getToolBySlug } from "@/lib/api";
+import BackLink from "@/components/BackLink";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const tool = await getTool(params.slug);
+    const tool = await getToolBySlug(params.slug);
     if (!tool) return { title: 'Not Found' };
 
     const title = tool.seoMetaTitle || tool.name;
@@ -42,7 +34,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function SingleToolPage({ params }: { params: { slug: string } }) {
-    const tool = await getTool(params.slug);
+    const tool = await getToolBySlug(params.slug);
 
     if (!tool) {
         notFound();
@@ -66,9 +58,7 @@ export default async function SingleToolPage({ params }: { params: { slug: strin
                     },
                 }) }}
             />
-            <Link href="/tools" className="inline-block text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground mb-12 transition-colors">
-                &larr; Catalog
-            </Link>
+            <BackLink href="/tools" label="Catalog" />
 
             <article>
                 {tool.featuredImage && (
