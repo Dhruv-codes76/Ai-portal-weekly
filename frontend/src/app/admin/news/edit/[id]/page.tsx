@@ -3,10 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import SEOEditor from "@/components/admin/SEOEditor";
-import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
-import RichTextEditor from "@/components/admin/RichTextEditor";
+import NewsEditor, { NewsFormData } from "@/components/admin/NewsEditor";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 export default function EditNewsPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -16,25 +14,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
     const [error, setError] = useState("");
-    const [formData, setFormData] = useState({
-        title: "",
-        slug: "",
-        summary: "",
-        content: "",
-        sourceLink: "",
-        status: "draft",
-        seoMetaTitle: "",
-        seoMetaDescription: "",
-        canonicalUrl: "",
-        ogTitle: "",
-        ogDescription: "",
-        ogImage: "",
-        twitterTitle: "",
-        twitterDescription: "",
-        twitterImage: "",
-        featuredImage: "",
-        featuredImageAlt: "",
-    });
+    const [initialData, setInitialData] = useState<NewsFormData | null>(null);
 
     useEffect(() => {
         const fetchArticle = async () => {
@@ -42,15 +22,6 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                 const token = localStorage.getItem("adminToken");
                 if (!token) return router.push("/admin/login");
 
-                // Assuming the backend has a way to fetch an article by ID.
-                // The current newsRoutes.js maps GET /:slug to getNewsBySlug.
-                // If it needs an ID, we might have to fetch all and filter or use slug.
-                // Let's use the all news list and filter for now to be safe, or just use the API if it's there.
-                // Wait, examining the `newsRoutes.js`:
-                // router.get('/', getNews);
-                // router.get('/:slug', getNewsBySlug);
-                // The backend fetches by slug, but here we have the ID.
-                // Let's fetch all news and find by ID since this is admin.
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/news`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
@@ -58,10 +29,10 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || "Failed to fetch article");
 
-                const article = data.data.find((item: any) => item._id === id);
+                const article = data.data.find((item: { _id: string; [key: string]: string | boolean | number }) => item._id === id);
                 if (!article) throw new Error("Article not found");
 
-                setFormData({
+                setInitialData({
                     title: article.title || "",
                     slug: article.slug || "",
                     summary: article.summary || "",
@@ -80,8 +51,8 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                     featuredImage: article.featuredImage || "",
                     featuredImageAlt: article.featuredImageAlt || "",
                 });
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
             } finally {
                 setFetching(false);
             }
@@ -90,22 +61,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
         fetchArticle();
     }, [id, router]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-
-        // Auto-generate slug from title (only if not already set by fetching, or keep sync)
-        if (name === "title" && !formData.slug) {
-            setFormData(prev => ({
-                ...prev,
-                title: value,
-                slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
-            }));
-        }
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (formData: NewsFormData) => {
         setLoading(true);
         setError("");
 
@@ -126,138 +82,52 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
             if (!res.ok) throw new Error(data.error || "Failed to update article");
 
             router.push("/admin/news");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : String(err));
             setLoading(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
     };
 
     if (fetching) {
         return (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center text-muted-foreground">
-                Loading article data...
+            <div className="max-w-[1600px] mx-auto min-h-screen py-32 flex flex-col items-center justify-center text-muted-foreground gap-4">
+                <Loader2 className="w-8 h-8 animate-spin" />
+                <p className="tracking-widest uppercase font-bold text-sm">Loading Intel Brief...</p>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="mb-8">
-                <Link href="/admin/news" className="text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center">
-                    <ArrowBackIcon className="w-4 h-4 mr-2" />
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 bg-muted/5 min-h-screen">
+            <div className="mb-6">
+                <Link href="/admin/news" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors group">
+                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                     Back to News Management
                 </Link>
             </div>
 
-            <h1 className="text-4xl font-sans font-bold tracking-tight mb-8">Edit Intelligence Brief</h1>
+            <header className="mb-8">
+                <h1 className="text-3xl md:text-5xl font-sans font-bold tracking-tight text-foreground">Edit Intelligence Brief</h1>
+                <p className="text-muted-foreground mt-2 italic text-lg max-w-2xl">
+                    Update your article below. Changes to the live preview reflect what your readers will see.
+                </p>
+            </header>
 
             {error && (
-                <div className="mb-8 p-4 border border-red-500 text-red-500 text-sm font-medium">
+                <div className="mb-8 p-4 border-l-4 border-red-500 bg-red-500/10 text-red-500 text-sm font-bold tracking-wide">
                     {error}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-10">
-                <FeaturedImagePortal 
-                    imageUrl={formData.featuredImage}
-                    imageAlt={formData.featuredImageAlt}
-                    onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+            {initialData && (
+                <NewsEditor 
+                    initialData={initialData}
+                    onSubmit={handleSubmit}
+                    loading={loading}
+                    isEdit={true}
                 />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Headline</label>
-                        <input
-                            required
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">URL Slug</label>
-                        <input
-                            required
-                            type="text"
-                            name="slug"
-                            value={formData.slug}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-bold tracking-widest uppercase block">Summary (Lead Paragraph)</label>
-                    <textarea
-                        required
-                        name="summary"
-                        rows={3}
-                        value={formData.summary}
-                        onChange={handleChange}
-                        className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors resize-y"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-bold tracking-widest uppercase block mb-2">Full Content (Intel Feed)</label>
-                    {/* Only render editor once data is fetched to avoid initialization issues */}
-                    {!fetching && (
-                        <RichTextEditor 
-                            content={formData.content}
-                            onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
-                            placeholder="Start typing your intelligence brief here..."
-                        />
-                    )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Original Source URL (Optional)</label>
-                        <input
-                            type="url"
-                            name="sourceLink"
-                            value={formData.sourceLink}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Status</label>
-                        <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm"
-                        >
-                            <option value="draft" className="bg-background">Draft</option>
-                            <option value="published" className="bg-background">Published</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className="pt-8 border-t border-border">
-                    <h2 className="text-2xl font-bold mb-6 uppercase tracking-tight">Search Engine Optimization (SEO)</h2>
-                    <SEOEditor 
-                        data={formData} 
-                        onChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
-                        baseSlug={formData.slug}
-                        type="news"
-                    />
-                </div>
-
-                <div className="pt-8 border-t border-border flex justify-end">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-8 py-4 bg-foreground text-background font-bold tracking-widest uppercase text-sm hover:bg-background hover:text-foreground border border-foreground transition-all disabled:opacity-50"
-                    >
-                        {loading ? "Saving Changes..." : "Save Changes"}
-                    </button>
-                </div>
-            </form>
+            )}
         </div>
     );
 }

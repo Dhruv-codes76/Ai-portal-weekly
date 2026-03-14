@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import SEOEditor from "@/components/admin/SEOEditor";
-import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
-import RichTextEditor from "@/components/admin/RichTextEditor";
+import NewsEditor, { NewsFormData } from "@/components/admin/NewsEditor";
+import { ArrowLeft } from "lucide-react";
 
 export default function CreateNewsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [formData, setFormData] = useState({
+
+    const initialData: NewsFormData = {
         title: "",
         slug: "",
         summary: "",
@@ -29,24 +29,9 @@ export default function CreateNewsPage() {
         twitterImage: "",
         featuredImage: "",
         featuredImageAlt: "",
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-
-        // Auto-generate slug from title
-        if (name === "title" && !formData.slug) {
-            setFormData(prev => ({
-                ...prev,
-                title: value,
-                slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
-            }));
-        }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (formData: NewsFormData) => {
         setLoading(true);
         setError("");
 
@@ -67,126 +52,41 @@ export default function CreateNewsPage() {
             if (!res.ok) throw new Error(data.error || "Failed to create article");
 
             router.push("/admin/news");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : String(err));
             setLoading(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="mb-8">
-                <Link href="/admin/news" className="text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors">
-                    &larr; Back to News Management
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 bg-muted/5 min-h-screen">
+            <div className="mb-6">
+                <Link href="/admin/news" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors group">
+                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    Back to News Management
                 </Link>
             </div>
 
-            <h1 className="text-4xl font-sans font-bold tracking-tight mb-8">Draft Intelligence Brief</h1>
+            <header className="mb-8">
+                <h1 className="text-3xl md:text-5xl font-sans font-bold tracking-tight text-foreground">Draft Intelligence Brief</h1>
+                <p className="text-muted-foreground mt-2 italic text-lg max-w-2xl">
+                    Create a new article. Use the live preview to see exactly how it will appear to your readers.
+                </p>
+            </header>
 
             {error && (
-                <div className="mb-8 p-4 border border-red-500 text-red-500 text-sm font-medium">
+                <div className="mb-8 p-4 border-l-4 border-red-500 bg-red-500/10 text-red-500 text-sm font-bold tracking-wide">
                     {error}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-10">
-                <FeaturedImagePortal 
-                    imageUrl={formData.featuredImage}
-                    imageAlt={formData.featuredImageAlt}
-                    onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Headline</label>
-                        <input
-                            required
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">URL Slug</label>
-                        <input
-                            required
-                            type="text"
-                            name="slug"
-                            value={formData.slug}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-bold tracking-widest uppercase block">Summary (Lead Paragraph)</label>
-                    <textarea
-                        required
-                        name="summary"
-                        rows={3}
-                        value={formData.summary}
-                        onChange={handleChange}
-                        className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors resize-y"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-bold tracking-widest uppercase block mb-2">Full Content (Intel Feed)</label>
-                    <RichTextEditor 
-                        content={formData.content}
-                        onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
-                        placeholder="Start typing your intelligence brief here..."
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Original Source URL (Optional)</label>
-                        <input
-                            type="url"
-                            name="sourceLink"
-                            value={formData.sourceLink}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Status</label>
-                        <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm"
-                        >
-                            <option value="draft" className="bg-background">Draft</option>
-                            <option value="published" className="bg-background">Published</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className="pt-8 border-t border-border">
-                    <h2 className="text-2xl font-bold mb-6 uppercase tracking-tight">Search Engine Optimization (SEO)</h2>
-                    <SEOEditor 
-                        data={formData} 
-                        onChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
-                        baseSlug={formData.slug}
-                        type="news"
-                    />
-                </div>
-
-                <div className="pt-8 border-t border-border flex justify-end">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-8 py-4 bg-foreground text-background font-bold tracking-widest uppercase text-sm hover:bg-background hover:text-foreground border border-foreground transition-all disabled:opacity-50"
-                    >
-                        {loading ? "Publishing..." : "Publish Article"}
-                    </button>
-                </div>
-            </form>
+            <NewsEditor 
+                initialData={initialData}
+                onSubmit={handleSubmit}
+                loading={loading}
+                isEdit={false}
+            />
         </div>
     );
 }
