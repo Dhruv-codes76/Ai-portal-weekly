@@ -28,3 +28,6 @@ yarn-error.log*
 *.iml
 *.sublime-project
 gemini.md
+
+# Scripts
+seedadmin.js
