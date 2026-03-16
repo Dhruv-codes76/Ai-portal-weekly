@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+
 import NewsCard from "@/components/NewsCard";
 import ToolCard from "@/components/ToolCard";
 import { getNews, getTools } from "@/lib/api";
@@ -9,7 +9,7 @@ export default async function Home() {
   const { data: latestTools } = await getTools(1, 4);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center selection:bg-foreground selection:text-background">
+    <div className="min-h-screen flex flex-col items-center selection:bg-foreground selection:text-background">
 
       {/* Editorial Hero Section */}
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 border-b-2 border-border">
@@ -45,7 +45,7 @@ export default async function Home() {
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-12 gap-16">
 
         {/* Left Column: Latest News List */}
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-12">
           <div className="flex justify-between items-baseline border-b-4 border-foreground pb-4 mb-8">
             <h2 className="text-3xl font-sans font-bold tracking-tight uppercase">Latest Dispatches</h2>
             <Link href="/news" className="text-sm tracking-widest uppercase font-bold text-muted-foreground hover:text-foreground transition-colors">
@@ -53,7 +53,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="flex flex-col">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
             {latestNews && latestNews.length > 0 ? (
               latestNews.map((news: any) => (
                 <NewsCard key={news._id} news={news} />
@@ -65,7 +65,7 @@ export default async function Home() {
         </div>
 
         {/* Right Column: Featured Tools Sidebar Grid */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-12 mt-12">
           <div className="flex justify-between items-baseline border-b-4 border-foreground pb-4 mb-8">
             <h2 className="text-3xl font-sans font-bold tracking-tight uppercase">Curated Tools</h2>
             <Link href="/tools" className="text-sm tracking-widest uppercase font-bold text-muted-foreground hover:text-foreground transition-colors">
@@ -73,7 +73,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
             {latestTools && latestTools.length > 0 ? (
               latestTools.map((tool: any) => (
                 <ToolCard key={tool._id} tool={tool} />

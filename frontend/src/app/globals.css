@@ -24,11 +24,43 @@
 
     --border: #E5E5E5;
   }
+
+  .dark {
+    --background: #030303;
+    --foreground: #ededed;
+
+    --card: #171717;
+    --card-foreground: #ededed;
+
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+
+    --border: #262626;
+  }
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;
+    /* Removed transition-colors duration-300 from here so we can handle custom gradient transitions */
+    min-height: 100vh;
+  }
+
+  /* YT Music style subtle gradient background for dark mode */
+  .dark body {
+    background: #030303;
+  }
+
+  .dark body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, #2b1738 0%, #030303 60%);
+    z-index: -1;
+    pointer-events: none;
   }
 
   h1,
@@ -39,4 +71,40 @@
   h6 {
     @apply font-sans tracking-tight;
   }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* View transition styles for smooth gradient-like reveal */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+.dark::view-transition-old(root) {
+  z-index: 2;
+}
+.dark::view-transition-new(root) {
+  z-index: 1;
 }

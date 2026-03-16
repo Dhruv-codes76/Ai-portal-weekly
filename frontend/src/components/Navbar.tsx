@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -13,13 +14,13 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className="fixed top-0 inset-x-0 z-50 bg-background border-b border-border">
+        <nav className="sticky top-0 backdrop-blur-md bg-background/80 inset-x-0 z-50 border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center">
                         <span className="font-sans font-bold text-3xl tracking-tight text-foreground">
-                            AI MVP
+                            AI Portal Weekly
                         </span>
                     </Link>
 
@@ -43,11 +44,12 @@ export default function Navbar() {
                         })}
                     </div>
 
-                    {/* Admin / Login */}
-                    <div className="flex items-center">
+                    {/* Actions */}
+                    <div className="flex items-center space-x-4">
+                        <ThemeToggle />
                         <Link
                             href="/admin/login"
-                            className="text-sm tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                            className="text-sm tracking-wide text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
                         >
                             Admin
                         </Link>
