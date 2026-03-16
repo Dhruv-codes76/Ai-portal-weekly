@@ -59,26 +59,26 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center">
-                        <span className="font-sans font-bold text-3xl tracking-tight text-foreground">
+                    <Link href="/" className="flex items-center group">
+                        <span className="font-sans font-bold text-2xl lg:text-3xl tracking-tight text-foreground transition-transform duration-300 group-hover:scale-[1.02]">
                             AI Portal Weekly
                         </span>
                     </Link>
 
                     {/* Desktop Nav */}
-                    <div className="hidden md:flex space-x-8 items-center">
+                    <div className="hidden md:flex space-x-10 items-center">
                         {navLinks.map((link) => {
                             const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
                             return (
                                 <Link
                                     key={link.name}
                                     href={link.href}
-                                    className={`text-sm tracking-wide transition-colors relative group py-2 ${isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                                    className={`text-sm tracking-wide transition-all duration-300 relative group py-2 font-semibold ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     {link.name}
                                     {/* Minimal underline hover effect typical of editorial design */}
-                                    <span className={`absolute left-0 bottom-0 w-full h-px transition-all duration-300 ${isActive ? 'bg-foreground' : 'bg-transparent group-hover:bg-muted-foreground'
+                                    <span className={`absolute left-0 bottom-0 h-[2px] rounded-full transition-all duration-300 ${isActive ? 'bg-foreground w-full' : 'bg-foreground w-0 group-hover:w-full'
                                         }`}></span>
                                 </Link>
                             );
@@ -86,11 +86,11 @@ export default function Navbar() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-6">
                         <ThemeToggle />
                         <Link
                             href="/admin/login"
-                            className="text-sm tracking-wide text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
+                            className="text-xs tracking-wider uppercase font-bold text-muted-foreground hover:text-foreground transition-colors hidden sm:block border border-border px-4 py-2 rounded-xl hover:bg-muted/50"
                         >
                             Admin
                         </Link>

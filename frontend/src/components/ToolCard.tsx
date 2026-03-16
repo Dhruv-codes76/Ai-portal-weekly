@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wrench } from "lucide-react";
 
 interface Category {
     _id: string;
@@ -17,28 +18,32 @@ interface ToolItem {
 
 export default function ToolCard({ tool }: { tool: ToolItem }) {
     return (
-        <Link href={`/tools/${tool.slug}`} className="block group h-full">
-            <article className="h-full border border-border p-6 flex flex-col transition-colors hover:bg-muted/30">
-                <div className="flex justify-between items-start mb-6">
-                    <h3 className="font-sans text-2xl font-bold group-hover:underline decoration-1 underline-offset-4 line-clamp-1">
-                        {tool.name}
-                    </h3>
-                    {tool.category && (
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border px-2 py-1">
-                            {tool.category.name}
-                        </span>
-                    )}
+        <article className="group flex flex-col h-full bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-foreground/20">
+            <Link href={`/tools/${tool.slug}`} className="flex flex-col h-full">
+                 {/* Image Placeholder Container (2:1 approx) with Zoom on Hover */}
+                 <div className="relative w-full pt-[40%] bg-muted/30 flex items-center justify-center overflow-hidden border-b border-border/50">
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30 bg-muted/20 transition-transform duration-700 group-hover:scale-105">
+                        <Wrench className="w-8 h-8" />
+                    </div>
                 </div>
 
-                <p className="text-sm text-muted-foreground flex-grow line-clamp-4 leading-relaxed mb-6">
-                    {tool.description}
-                </p>
+                <div className="flex flex-col flex-grow p-6 lg:p-8">
+                    <div className="flex justify-between items-start mb-4 gap-4">
+                        <h3 className="font-sans text-xl font-bold leading-tight group-hover:text-foreground/80 transition-colors line-clamp-2">
+                            {tool.name}
+                        </h3>
+                    </div>
 
-                <div className="mt-auto pt-4 border-t border-border flex justify-between items-center text-xs tracking-wide">
-                    <span className="uppercase text-muted-foreground font-medium">Pricing</span>
-                    <span className="capitalize">{tool.pricing || "Free / Freemium"}</span>
+                    <p className="text-sm text-muted-foreground flex-grow line-clamp-3 leading-relaxed font-medium mb-6">
+                        {tool.description}
+                    </p>
+
+                    <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center text-xs tracking-wide">
+                        <span className="font-semibold text-muted-foreground uppercase">Pricing</span>
+                        <span className="capitalize font-medium px-2 py-1 rounded-md bg-muted/50 text-foreground/80">{tool.pricing || "Freemium"}</span>
+                    </div>
                 </div>
-            </article>
-        </Link>
+            </Link>
+        </article>
     );
 }
