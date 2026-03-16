@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+
 import NewsCard from "@/components/NewsCard";
 import ToolCard from "@/components/ToolCard";
 import { getNews, getTools } from "@/lib/api";
@@ -9,7 +9,7 @@ export default async function Home() {
   const { data: latestTools } = await getTools(1, 4);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center selection:bg-foreground selection:text-background">
+    <div className="min-h-screen flex flex-col items-center selection:bg-foreground selection:text-background">
 
       {/* Editorial Hero Section */}
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 border-b-2 border-border">

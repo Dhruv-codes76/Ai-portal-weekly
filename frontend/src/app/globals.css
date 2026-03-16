@@ -43,12 +43,24 @@
   body {
     @apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;
     /* Removed transition-colors duration-300 from here so we can handle custom gradient transitions */
+    min-height: 100vh;
   }
 
   /* YT Music style subtle gradient background for dark mode */
   .dark body {
+    background: #030303;
+  }
+
+  .dark body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: radial-gradient(ellipse at 50% 0%, #2b1738 0%, #030303 60%);
-    background-attachment: fixed;
+    z-index: -1;
+    pointer-events: none;
   }
 
   h1,
