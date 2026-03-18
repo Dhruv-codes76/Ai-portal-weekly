@@ -1,5 +1,5 @@
 const xss = require('xss');
-const prisma = require('../utils/prisma');
+const Comment = require('../models/Comment');
 const { generateAnonymousId } = require('../utils/hashIp');
 const AppError = require('../utils/AppError');
 
@@ -42,13 +42,11 @@ const createComment = async (req, res, next) => {
 
         const safeText = validateComment(comment_text);
 
-        const comment = await prisma.comment.create({
-            data: {
-                article_id,
-                anonymous_id,
-                comment_text: safeText,
-                parent_id: parent_id || null,
-            }
+        const comment = await Comment.create({
+            article_id,
+            anonymous_id,
+            comment_text: safeText,
+            parent_id: parent_id || null,
         });
 
         res.status(201).json(comment);
@@ -64,22 +62,17 @@ const getComments = async (req, res, next) => {
             return res.status(400).json({ error: 'article_id is required' });
         }
 
-        const comments = await prisma.comment.findMany({
-            where: {
-                article_id,
-                is_hidden: false
-            },
-            orderBy: [
-                { likes: 'desc' },
-                { created_at: 'desc' }
-            ]
-        });
+        const comments = await Comment.find({
+            article_id,
+            is_hidden: false
+        }).sort({ likes: -1, created_at: -1 }).lean();
 
         // Build threaded structure
         const commentMap = {};
         const rootComments = [];
 
         comments.forEach(c => {
+            c.id = c._id.toString();
             commentMap[c.id] = { ...c, replies: [] };
         });
 
@@ -100,12 +93,11 @@ const getComments = async (req, res, next) => {
 const likeComment = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const updatedComment = await prisma.comment.update({
-            where: { id },
-            data: {
-                likes: { increment: 1 }
-            }
-        });
+        const updatedComment = await Comment.findByIdAndUpdate(
+            id,
+            { $inc: { likes: 1 } },
+            { new: true }
+        );
         res.json(updatedComment);
     } catch (error) {
         next(error);

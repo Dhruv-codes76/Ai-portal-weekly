@@ -1,4 +1,8 @@
 require('dotenv').config();
+const dns = require('dns');
+const https = require('https');
+dns.setDefaultResultOrder('ipv4first');
+https.globalAgent = new https.Agent({ family: 4 });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');

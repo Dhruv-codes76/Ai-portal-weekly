@@ -8,9 +8,15 @@ cloudinary.config({
 
 const uploadToCloudinary = (fileBuffer, folder = 'uploads') => {
   return new Promise((resolve, reject) => {
+    // Fail fast after 30 seconds so we never return a 499 (client timeout) silently
+    const timer = setTimeout(() => {
+      reject(new Error('Cloudinary upload timed out after 30 seconds'));
+    }, 30_000);
+
     const uploadStream = cloudinary.uploader.upload_stream(
       { folder },
       (error, result) => {
+        clearTimeout(timer);
         if (error) return reject(error);
         resolve(result);
       }

@@ -11,6 +11,7 @@ interface NewsItem {
     summary: string;
     createdAt: string;
     image_url?: string;
+    featuredImage?: string;
     trending?: boolean;
     category?: string;
 }
@@ -60,10 +61,10 @@ export default function NewsCard({ news }: { news: NewsItem }) {
 
                 {/* Image Placeholder Container (16:9) */}
                 <div className="relative w-full pt-[56.25%] bg-muted/30 overflow-hidden">
-                    {news.image_url ? (
+                    {(news.image_url || news.featuredImage) ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                            src={news.image_url}
+                            src={news.image_url || news.featuredImage}
                             alt={news.title}
                             loading="lazy"
                             className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
