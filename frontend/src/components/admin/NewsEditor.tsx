@@ -422,9 +422,9 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                 <div className="flex items-center gap-4 w-full max-w-7xl mx-auto justify-between lg:justify-end">
                     <div className="text-xs font-black uppercase tracking-widest text-muted-foreground hidden md:flex items-center gap-4">
                         {!healthChecks.every(c => c.passed) && (
-                            <div className="flex items-center gap-1.5 text-red-500 animate-pulse">
+                            <div className="flex items-center gap-1.5 text-yellow-500">
                                 <AlertCircle className="w-4 h-4" />
-                                <span>Standards Not Met</span>
+                                <span>SEO Tips Available</span>
                             </div>
                         )}
                         <div className="flex items-center gap-2">
@@ -433,7 +433,7 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                     </div>
                     <button
                         type="submit"
-                        disabled={loading || !healthChecks.every(c => c.passed)}
+                        disabled={loading}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-4 bg-foreground text-background font-black tracking-widest uppercase text-sm hover:translate-y-[-2px] active:translate-y-[0px] transition-all disabled:opacity-50 disabled:grayscale shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
                     >
                         <Save className="w-4 h-4" />
