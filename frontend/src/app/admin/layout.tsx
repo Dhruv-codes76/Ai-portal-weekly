@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, Newspaper, Wrench, LogOut, Menu, X, ShieldAlert } from 'lucide-react';
+import { supabase } from "@/lib/supabaseClient";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,7 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const router = useRouter();
     const pathname = usePathname();
 
-    const isLogin = pathname === '/admin/login';
+    const isLogin = pathname === '/admin/login' || pathname === '/login';
 
     useEffect(() => {
         if (isLogin) {
@@ -19,12 +20,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             return;
         }
 
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
-            router.push('/admin/login');
-        } else {
-            setIsAuthenticated(true);
-        }
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                // If no Supabase session, fallback to check legacy token, but mainly redirect
+                const token = localStorage.getItem('adminToken');
+                if (!token) {
+                    router.push('/login');
+                } else {
+                    setIsAuthenticated(true);
+                }
+            } else {
+                setIsAuthenticated(true);
+            }
+        };
+
+        checkSession();
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+             if (!session && !isLogin && !localStorage.getItem('adminToken')) {
+                 router.push('/login');
+             } else if (session) {
+                 setIsAuthenticated(true);
+             }
+        });
+
+        return () => subscription.unsubscribe();
+
     }, [router, isLogin]);
 
     if (!isAuthenticated) return (
@@ -37,9 +61,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return <>{children}</>;
     }
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         localStorage.removeItem('adminToken');
-        router.push('/admin/login');
+        await supabase.auth.signOut();
+        router.push('/');
     };
 
     const navItems = [
