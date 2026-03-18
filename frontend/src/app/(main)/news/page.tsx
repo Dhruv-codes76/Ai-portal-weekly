@@ -3,8 +3,6 @@ import { getNews } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = {
     title: "Latest AI News | Editorial",
     description: "Read the latest beginner-friendly, unbiased AI news.",
