@@ -1,0 +1,135 @@
+Project Overview
+----------------
+The AI Portal Weekly is a web application that collects, organizes, and displays the latest AI news and tools. Its purpose is to filter the noise in the AI industry and provide a clean, beginner-friendly platform for learning and discovering AI. It has a public-facing website for readers and a secure Admin Panel for editors to create and manage content.
+
+Tech Stack
+----------
+- Frontend: Next.js (App Router), React, Tailwind CSS v4, Material UI. Used for building a fast, SEO-friendly, and modern user interface.
+- Backend: Node.js, Express.js. Used to build the API that connects the frontend to the databases.
+- Databases:
+  - MongoDB (via Mongoose): Stores News, Tools, Categories, Admins, and Activity Logs. Good for flexible document storage.
+  - PostgreSQL (via Prisma v5): Stores user Comments. Good for structured, relational data like comment threads.
+- Styling: Tailwind CSS handles most of the design, with a few complex UI components built using Material UI.
+
+Project Structure
+-----------------
+The project is divided into two main folders:
+- `backend/`: Contains the Node.js server.
+  - `src/index.js`: Main server file.
+  - `src/models/`: MongoDB schema definitions (News.js, Tool.js, etc.).
+  - `prisma/schema.prisma`: PostgreSQL schema definitions for comments.
+- `frontend/`: Contains the Next.js React application.
+  - `src/app/`: Contains the main pages (routing). Has public pages inside `(main)/` and private admin pages inside `admin/`.
+  - `src/components/`: Reusable UI parts like cards, navigation, buttons, and comment sections.
+  - `src/lib/api.ts`: Helper functions to fetch data from the backend API.
+
+Frontend Explanation
+--------------------
+- Home Page (`/`): Shows a mix of the latest news and featured AI tools. Features a dynamic ambient background.
+- News Page (`/news`): A directory of all published AI news articles.
+- News Detail (`/news/[slug]`): The page where you read a single article. Features a clean "Medium-style" reading experience and a mobile swipe-back gesture.
+- Tools Page (`/tools`): A catalog of curated AI tools.
+- Admin Panel (`/admin`): A hidden section where authenticated admins can create, edit, or delete news and tools.
+
+Backend Explanation
+-------------------
+The backend handles requests from the frontend, securely talks to the databases, and sends data back.
+- It uses REST API routes (e.g., GET `/api/news` to fetch news).
+- It handles authentication using JWT (JSON Web Tokens). When an admin logs in, they get a token that proves who they are for future requests.
+- It includes rate limiting and basic security measures (like XSS protection) to prevent abuse.
+
+Database Structure
+------------------
+- News Table (MongoDB): Stores title, slug (URL-friendly name), summary, HTML content, featured image, SEO tags, and publication dates.
+- Tool Table (MongoDB): Stores tool name, slug, description, image, pricing model (free/paid), and links.
+- Admin Table (MongoDB): Stores usernames and securely hashed passwords.
+- ActivityLog Table (MongoDB): Tracks actions taken by admins (like who edited a post and when).
+- Comment Table (Postgres): Stores `id`, `article_id` (links to News), `anonymous_id` (a generated string based on user IP to track unique commenters without accounts), `comment_text`, `parent_id` (for replies), and `likes`.
+
+Data Flow
+---------
+1. Read Flow: A user visits the frontend. Next.js calls `lib/api.ts`, which sends a GET request to the Node.js backend. The backend queries MongoDB or Postgres, gets the data, and sends it back as JSON. The frontend renders the UI.
+2. Write Flow (Admin): An admin fills out a form in the Admin Panel. Next.js sends a POST/PUT request with the data and their JWT token to the backend. The backend verifies the token, saves the data to MongoDB, and returns a success message.
+
+Admin Panel Flow
+----------------
+1. Admin visits `/admin/login` and enters credentials.
+2. The backend checks the password and returns a JWT token. The token is stored in the browser (localStorage).
+3. The Admin is redirected to `/admin/dashboard`.
+4. From the dashboard, the admin can navigate to News or Tools sections.
+5. They use a Rich Text Editor to create content. When they click save, the data is sent to the backend and becomes instantly visible on the public frontend.
+
+Comments System
+---------------
+The project uses an anonymous, account-less comment system.
+1. When a user writes a comment, the frontend sends the text and the `article_id` to the backend.
+2. The backend looks at the user's IP address (from the `x-forwarded-for` header) and creates a unique `anonymous_id`.
+3. The comment is saved to PostgreSQL using Prisma.
+4. Replies are handled by storing the `parent_id` of the comment being replied to.
+5. Users can also "like" comments, which increments a counter in the database.
+
+Common Issues & Fixes
+---------------------
+- Sluggish UI or Blank Screens: If pages load slowly, the frontend uses "Skeleton Loaders" (pulse animations) so the user knows data is coming. Links use `prefetch={true}` to load pages early.
+- Caching Issues: Next.js aggressively caches data. If new posts don't appear, ensure `revalidate = 0` is set on dynamic pages or use `router.refresh()` after making an update.
+- Prisma Connection Errors: Ensure the `DATABASE_URL` in the backend `.env` file is correct and that you are using Prisma v5 (not newer versions, to avoid connection string variable issues).
+- Mobile Navigation: The mobile view uses a bottom app-like tab bar and a custom left-edge swipe gesture for going back. If it breaks, check `SwipeToBack.tsx`.
+
+Deployment
+----------
+- The frontend is designed to be deployed on a serverless platform like Vercel.
+- The backend needs to be deployed to a Node.js hosting provider (like Render, Heroku, or an AWS EC2 instance).
+- Mongoose connects to a MongoDB cluster (like MongoDB Atlas).
+- Prisma connects to a PostgreSQL database (like Supabase, Neon, or AWS RDS).
+- Environment variables (`.env`) must be configured on both frontend (`NEXT_PUBLIC_API_URL`) and backend (`DATABASE_URL`, `MONGO_URI`, `JWT_SECRET`).
+
+```json
+{
+  "project_name": "AI Portal Weekly",
+  "tech_stack": [
+    "Next.js (App Router)",
+    "React",
+    "Tailwind CSS v4",
+    "Material UI",
+    "Node.js",
+    "Express.js",
+    "MongoDB (Mongoose)",
+    "PostgreSQL (Prisma v5)"
+  ],
+  "frontend": [
+    "Home",
+    "News Directory",
+    "News Detail",
+    "Tools Catalog",
+    "Admin Panel"
+  ],
+  "backend": [
+    "Express REST API",
+    "JWT Authentication",
+    "Rate Limiting"
+  ],
+  "database_tables": [
+    "News (MongoDB)",
+    "Tool (MongoDB)",
+    "Category (MongoDB)",
+    "Admin (MongoDB)",
+    "ActivityLog (MongoDB)",
+    "Comment (PostgreSQL)"
+  ],
+  "api_routes": [
+    "/api/news",
+    "/api/tools",
+    "/api/admin/login",
+    "/api/comments"
+  ],
+  "data_flow": "Frontend (Next.js) -> API (Express) -> Database (Mongo/Postgres) -> API -> Frontend",
+  "admin_flow": "Login -> JWT Token -> Dashboard -> Create/Edit Post -> Save to DB -> Visible on Frontend",
+  "key_features": [
+    "Premium UI with animations and dynamic backgrounds",
+    "Anonymous IP-based commenting system",
+    "Secure Admin dashboard with rich text editing",
+    "Mobile-optimized app-like navigation and swipe gestures",
+    "Instant tap feedback and skeleton loaders for performance UX"
+  ]
+}
+```
