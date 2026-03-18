@@ -8,7 +8,7 @@ interface BackLinkProps {
 
 export default function BackLink({ href, label }: BackLinkProps) {
     return (
-        <Link href={href} className="inline-block text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground mb-12 transition-colors">
+        <Link href={href} className="inline-block transition-all duration-200 active:scale-95 active:opacity-70 text-sm font-bold tracking-widest uppercase text-muted-foreground hover:text-foreground mb-12 transition-colors">
             &larr; {label}
         </Link>
     );
