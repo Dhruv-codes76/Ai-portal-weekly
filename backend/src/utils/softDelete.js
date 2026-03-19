@@ -6,9 +6,12 @@ const AppError = require('./AppError');
  * No longer controls HTTP response — returns data for the controller to handle.
  */
 const softDelete = async (req, prismaModel, modelName, id) => {
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) throw new AppError(`Invalid ${modelName} ID`, 400);
+
     try {
         const doc = await prismaModel.update({
-            where: { id: parseInt(id, 10) },
+            where: { id: parsedId },
             data: { isDeleted: true }
         });
         await logActivity(req, 'DEACTIVATE', modelName, doc.id.toString());
@@ -20,9 +23,12 @@ const softDelete = async (req, prismaModel, modelName, id) => {
 };
 
 const restore = async (req, prismaModel, modelName, id) => {
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) throw new AppError(`Invalid ${modelName} ID`, 400);
+
     try {
         const doc = await prismaModel.update({
-            where: { id: parseInt(id, 10) },
+            where: { id: parsedId },
             data: { isDeleted: false }
         });
         await logActivity(req, 'RESTORE', modelName, doc.id.toString());
