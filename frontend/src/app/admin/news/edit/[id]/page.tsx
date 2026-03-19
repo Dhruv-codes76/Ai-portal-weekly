@@ -29,7 +29,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || "Failed to fetch article");
 
-                const article = data.data.find((item: { _id: string; [key: string]: string | boolean | number }) => item._id === id);
+                const article = data.data.find((item: any) => String(item.id) === String(id));
                 if (!article) throw new Error("Article not found");
 
                 setInitialData({
@@ -88,7 +88,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to update article");
+            if (!res.ok) throw new Error(data.message || data.error || "Failed to update article");
 
             router.push("/admin/news");
         } catch (err) {

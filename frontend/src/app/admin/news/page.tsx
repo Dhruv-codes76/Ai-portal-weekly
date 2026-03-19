@@ -100,7 +100,7 @@ export default function AdminNewsPage() {
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {news.map((item: any) => (
-                                    <tr key={item._id} className="hover:bg-muted/50 transition-colors">
+                                    <tr key={item.id} className="hover:bg-muted/50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-foreground max-w-xs truncate">{item.title}</td>
                                         <td className="px-6 py-4 text-muted-foreground">{item.slug}</td>
                                         <td className="px-6 py-4">
@@ -112,14 +112,14 @@ export default function AdminNewsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right space-x-3">
                                             <Link
-                                                href={`/admin/news/edit/${item._id}`}
+                                                href={`/admin/news/edit/${item.id}`}
                                                 className="text-muted-foreground hover:text-foreground transition-colors inline-block"
                                                 title="Edit"
                                             >
                                                 <EditOpenIcon className="w-5 h-5 mx-1" />
                                             </Link>
                                             <button
-                                                onClick={() => deactivateNews(item._id)}
+                                                onClick={() => deactivateNews(item.id)}
                                                 disabled={item.isDeleted}
                                                 className="text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors mx-1"
                                                 title="Deactivate"
