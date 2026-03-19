@@ -13,7 +13,6 @@ async function apiFetch(path: string, options: RequestInit = {}) {
         return null; // backend offline → return null gracefully
     }
 }
-
 export async function getNews(page = 1, limit = 12) {
     // Disable caching for news lists to ensure immediate visibility of new articles
     const data = await apiFetch(`/news?page=${page}&limit=${limit}`, { cache: 'no-store' });
@@ -28,8 +27,10 @@ export async function getNewsBySlug(slug: string) {
 export async function getTools(page = 1, limit = 12, category = '') {
     // Disable caching for tools
     const q = category ? `&category=${category}` : '';
-    const data = await apiFetch(`/tools?page=${page}&limit=${limit}${q}`, { cache: 'no-store' });
-    return data ?? { data: [], total: 0, page: 1, totalPages: 1 };
+    const raw = await apiFetch(`/tools?page=${page}&limit=${limit}${q}`, { cache: 'no-store' });
+    // Backend returns a raw array for tools — normalize to { data, total } for consistency
+    if (Array.isArray(raw)) return { data: raw, total: raw.length, page, totalPages: 1 };
+    return raw ?? { data: [], total: 0, page: 1, totalPages: 1 };
 }
 
 export async function getToolBySlug(slug: string) {

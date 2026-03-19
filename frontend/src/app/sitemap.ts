@@ -32,19 +32,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             getTools(1, 1000)
         ]);
 
-        const newsUrls = (newsData.data || []).map((article: any) => ({
+        const newsUrls = Array.isArray(newsData.data) ? newsData.data.map((article: any) => ({
             url: `${baseUrl}/news/${article.slug}`,
             lastModified: new Date(article.updatedAt || article.createdAt),
             changeFrequency: 'weekly' as const,
             priority: 0.8,
-        }));
+        })) : [];
 
-        const toolUrls = (toolsData.data || []).map((tool: any) => ({
+        const toolUrls = Array.isArray(toolsData.data) ? toolsData.data.map((tool: any) => ({
             url: `${baseUrl}/tools/${tool.slug}`,
             lastModified: new Date(tool.updatedAt || tool.createdAt),
             changeFrequency: 'weekly' as const,
             priority: 0.8,
-        }));
+        })) : [];
 
         return [
             ...baseUrls,
