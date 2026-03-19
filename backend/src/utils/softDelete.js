@@ -1,35 +1,35 @@
 const { logActivity } = require('./logger');
 const AppError = require('./AppError');
 
-const softDelete = async (req, prismaModel, modelName, id, res, next) => {
+/**
+ * Enterprise Soft-Delete Utility
+ * No longer controls HTTP response — returns data for the controller to handle.
+ */
+const softDelete = async (req, prismaModel, modelName, id) => {
     try {
         const doc = await prismaModel.update({
             where: { id: parseInt(id, 10) },
             data: { isDeleted: true }
         });
         await logActivity(req, 'DEACTIVATE', modelName, doc.id.toString());
-        res.json({ message: `${modelName} deactivated successfully`, data: doc });
+        return doc;
     } catch (err) {
-        if (err.code === 'P2025') {
-            return next(new AppError(`${modelName} not found`, 404));
-        }
-        return next(err);
+        if (err.code === 'P2025') throw new AppError(`${modelName} not found`, 404);
+        throw err;
     }
 };
 
-const restore = async (req, prismaModel, modelName, id, res, next) => {
+const restore = async (req, prismaModel, modelName, id) => {
     try {
         const doc = await prismaModel.update({
             where: { id: parseInt(id, 10) },
             data: { isDeleted: false }
         });
         await logActivity(req, 'RESTORE', modelName, doc.id.toString());
-        res.json({ message: `${modelName} restored successfully`, data: doc });
+        return doc;
     } catch (err) {
-        if (err.code === 'P2025') {
-            return next(new AppError(`${modelName} not found`, 404));
-        }
-        return next(err);
+        if (err.code === 'P2025') throw new AppError(`${modelName} not found`, 404);
+        throw err;
     }
 };
 

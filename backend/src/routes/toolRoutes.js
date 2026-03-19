@@ -14,7 +14,10 @@ const {
 
 router.get('/', getTools);
 router.get('/:slug', getToolBySlug);
-router.post('/', authMiddleware, upload.fields([
+const validate = require('../middleware/validate');
+const { createToolSchema } = require('../validations/toolValidation');
+
+router.post('/', authMiddleware, validate(createToolSchema), upload.fields([
   { name: 'featuredImage', maxCount: 1 },
   { name: 'ogImage', maxCount: 1 },
   { name: 'twitterImage', maxCount: 1 }

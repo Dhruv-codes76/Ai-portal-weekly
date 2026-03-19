@@ -34,7 +34,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/logs', activityLogRoutes);
 
 // Initialize Prisma Connection
-const prisma = require('./prisma');
+const prisma = require('./config/prisma');
 prisma.$connect()
     .then(() => console.log('Prisma disconnected nicely... just kidding, Prisma PostgreSQL Connected!'))
     .catch(err => console.log('Prisma Connection Error:', err));

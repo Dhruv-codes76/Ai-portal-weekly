@@ -1,4 +1,4 @@
-const prisma = require('../prisma');
+const prisma = require('../config/prisma');
 
 /**
  * Centrally log admin operations to the database using Prisma

@@ -9,8 +9,11 @@ const {
     restoreCategory
 } = require('../controllers/categoryController');
 
+const validate = require('../middleware/validate');
+const { createCategorySchema } = require('../validations/categoryValidation');
+
 router.get('/', getCategories);
-router.post('/', authMiddleware, createCategory);
+router.post('/', authMiddleware, validate(createCategorySchema), createCategory);
 router.put('/:id', authMiddleware, updateCategory);
 router.delete('/:id', authMiddleware, deactivateCategory);
 router.put('/:id/restore', authMiddleware, restoreCategory);

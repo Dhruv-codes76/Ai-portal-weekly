@@ -1,18 +1,18 @@
-const prisma = require('../prisma');
-const { softDelete, restore } = require('../utils/softDelete');
+const toolService = require('../services/toolService');
 const { logActivity } = require('../utils/logger');
-const { generateSEO } = require('../utils/seoUtils');
-const AppError = require('../utils/AppError');
-const { handleImageUploads } = require('../utils/cloudinary');
+const { softDelete, restore } = require('../utils/softDelete');
+const prisma = require('../config/prisma');
+
+/**
+ * Enterprise Tool Controller
+ */
 
 const getTools = async (req, res, next) => {
     try {
-        const query = req.header('Authorization') ? { isDeleted: false } : { status: 'PUBLISHED', isDeleted: false };
-        if (req.query.category) query.categoryId = parseInt(req.query.category, 10);
-
-        const tools = await prisma.tool.findMany({
-            where: query,
-            include: { category: { select: { name: true, slug: true } } }
+        const isAuthorized = !!req.header('Authorization');
+        const tools = await toolService.getAllTools({
+            isAuthorized,
+            categoryId: req.query.category
         });
         res.json(tools);
     } catch (error) {
@@ -22,15 +22,8 @@ const getTools = async (req, res, next) => {
 
 const getToolBySlug = async (req, res, next) => {
     try {
-        const tool = await prisma.tool.findFirst({
-            where: { slug: req.params.slug, isDeleted: false },
-            include: { category: { select: { name: true, slug: true } } }
-        });
-        if (!tool) return next(new AppError('Tool not found', 404));
-        
-        if (tool.status === 'DRAFT' && !req.header('Authorization')) {
-            return next(new AppError('Forbidden', 403));
-        }
+        const isAuthorized = !!req.header('Authorization');
+        const tool = await toolService.getToolBySlug(req.params.slug, isAuthorized);
         res.json(tool);
     } catch (error) {
         next(error);
@@ -39,22 +32,7 @@ const getToolBySlug = async (req, res, next) => {
 
 const createTool = async (req, res, next) => {
     try {
-        let toolData = generateSEO(req.body, 'tool');
-        toolData = await handleImageUploads(req.files, toolData, 'tools');
-
-        // Mongoose sometimes passes relation IDs as the model name (e.g. `category`)
-        if (toolData.category) {
-            toolData.categoryId = parseInt(toolData.category, 10);
-            delete toolData.category;
-        }
-
-        // Convert enum string
-        if (toolData.status) toolData.status = toolData.status.toUpperCase();
-        if (toolData.pricing) toolData.pricing = toolData.pricing.toUpperCase();
-
-        const tool = await prisma.tool.create({
-            data: toolData
-        });
+        const tool = await toolService.createTool(req.body, req.files);
         await logActivity(req, 'CREATE', 'Tool', tool.id.toString(), { name: tool.name });
         res.status(201).json(tool);
     } catch (error) {
@@ -64,38 +42,30 @@ const createTool = async (req, res, next) => {
 
 const updateTool = async (req, res, next) => {
     try {
-        let toolData = generateSEO(req.body, 'tool');
-        toolData = await handleImageUploads(req.files, toolData, 'tools');
-
-        if (toolData.category) {
-            toolData.categoryId = parseInt(toolData.category, 10);
-            delete toolData.category;
-        }
-
-        if (toolData.status) toolData.status = toolData.status.toUpperCase();
-        if (toolData.pricing) toolData.pricing = toolData.pricing.toUpperCase();
-
-        const tool = await prisma.tool.update({
-            where: { id: parseInt(req.params.id, 10) },
-            data: toolData
-        });
-        
-        await logActivity(req, 'UPDATE', 'Tool', tool.id.toString(), toolData);
+        const tool = await toolService.updateTool(req.params.id, req.body, req.files);
+        await logActivity(req, 'UPDATE', 'Tool', tool.id.toString(), req.body);
         res.json(tool);
     } catch (error) {
-        if (error.code === 'P2025') {
-            return next(new AppError('Tool not found with that ID', 404));
-        }
         next(error);
     }
 };
 
 const deactivateTool = async (req, res, next) => {
-    return softDelete(req, prisma.tool, 'Tool', req.params.id, res, next);
+    try {
+        const doc = await softDelete(req, prisma.tool, 'Tool', req.params.id);
+        res.json({ message: 'Tool deactivated successfully', data: doc });
+    } catch (error) {
+        next(error);
+    }
 };
 
 const restoreTool = async (req, res, next) => {
-    return restore(req, prisma.tool, 'Tool', req.params.id, res, next);
+    try {
+        const doc = await restore(req, prisma.tool, 'Tool', req.params.id);
+        res.json({ message: 'Tool restored successfully', data: doc });
+    } catch (error) {
+        next(error);
+    }
 };
 
 module.exports = { getTools, getToolBySlug, createTool, updateTool, deactivateTool, restoreTool };

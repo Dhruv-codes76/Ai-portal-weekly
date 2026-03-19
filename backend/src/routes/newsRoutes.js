@@ -12,9 +12,13 @@ const {
     restoreNews
 } = require('../controllers/newsController');
 
+const validate = require('../middleware/validate');
+const { createNewsSchema } = require('../validations/newsValidation');
+
 router.get('/', getNews);
 router.get('/:slug', getNewsBySlug);
-router.post('/', authMiddleware, upload.fields([
+
+router.post('/', authMiddleware, validate(createNewsSchema), upload.fields([
   { name: 'featuredImage', maxCount: 1 },
   { name: 'ogImage', maxCount: 1 },
   { name: 'twitterImage', maxCount: 1 }

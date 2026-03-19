@@ -1,26 +1,24 @@
 const AppError = require('../utils/AppError');
 
-const handleCastErrorDB = err => {
-    const message = `Invalid ${err.path}: ${err.value}.`;
-    return new AppError(message, 400);
+/**
+ * Enterprise Global Error Handler
+ * Handles Prisma-specific, JWT, and generic errors.
+ */
+
+// Prisma unique constraint violation (e.g. duplicate slug/email)
+const handlePrismaUniqueConstraint = (err) => {
+    const field = err.meta?.target?.[0] || 'field';
+    return new AppError(`Duplicate value for '${field}'. Please use a different value.`, 400);
 };
 
-const handleDuplicateFieldsDB = err => {
-    const value = Object.values(err.keyValue)[0];
-    const message = `Duplicate field value: '${value}'. Please use another value!`;
-    return new AppError(message, 400);
-};
+// Prisma record not found
+const handlePrismaNotFound = () => new AppError('Record not found.', 404);
 
-const handleValidationErrorDB = err => {
-    const errors = Object.values(err.errors).map(el => el.message);
-    const message = `Invalid input data. ${errors.join('. ')}`;
-    return new AppError(message, 400);
-};
-
+// JWT errors
 const handleJWTError = () => new AppError('Invalid token. Please log in again!', 401);
-
 const handleJWTExpiredError = () => new AppError('Your token has expired! Please log in again.', 401);
 
+// Dev: send full error details
 const sendErrorDev = (err, res) => {
     res.status(err.statusCode).json({
         status: err.status,
@@ -30,19 +28,18 @@ const sendErrorDev = (err, res) => {
     });
 };
 
+// Prod: only send safe messages
 const sendErrorProd = (err, res) => {
-    // Operational, trusted error: send message to client
     if (err.isOperational) {
         res.status(err.statusCode).json({
-            status: err.status,
-            error: err.message
+            success: false,
+            message: err.message
         });
     } else {
-        // Programming or other unknown error: don't leak error details
-        console.error('ERROR 💥', err);
+        console.error('UNHANDLED ERROR 💥', err);
         res.status(500).json({
-            status: 'error',
-            error: 'Something went very wrong!'
+            success: false,
+            message: 'Something went very wrong!'
         });
     }
 };
@@ -54,12 +51,14 @@ module.exports = (err, req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
     } else {
-        let error = { ...err };
+        let error = Object.create(err);
         error.message = err.message;
 
-        if (error.name === 'CastError') error = handleCastErrorDB(error);
-        if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-        if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
+        // Prisma errors
+        if (error.code === 'P2002') error = handlePrismaUniqueConstraint(error);
+        if (error.code === 'P2025') error = handlePrismaNotFound();
+
+        // JWT errors
         if (error.name === 'JsonWebTokenError') error = handleJWTError();
         if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
