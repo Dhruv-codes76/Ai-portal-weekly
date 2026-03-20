@@ -12,7 +12,15 @@ export async function getComments(articleId: string) {
     }
 }
 
-export async function postComment(articleId: string, commentText: string, parentId?: string, website?: string) {
+export async function postComment(
+    articleId: string,
+    commentText: string,
+    parentId?: string,
+    website?: string,
+    userId?: string,
+    userName?: string,
+    userAvatar?: string
+) {
     const res = await fetch(`${API_BASE}/comment`, {
         method: 'POST',
         headers: {
@@ -22,7 +30,10 @@ export async function postComment(articleId: string, commentText: string, parent
             article_id: articleId,
             comment_text: commentText,
             parent_id: parentId,
-            website
+            website,
+            user_id: userId,
+            user_name: userName,
+            user_avatar: userAvatar
         })
     });
 

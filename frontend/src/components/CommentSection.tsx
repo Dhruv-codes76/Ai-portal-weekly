@@ -5,6 +5,9 @@ import { getComments } from "@/lib/commentsApi";
 type Comment = {
     id: string;
     anonymous_id: string;
+    user_id?: string;
+    user_name?: string;
+    user_avatar?: string;
     comment_text: string;
     likes: number;
     created_at: string;
@@ -57,7 +60,7 @@ export default async function CommentSection({ articleId }: { articleId: string 
 
             {comments.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground border-2 border-dashed border-border rounded-xl">
-                    Be the first to share an insight anonymously.
+                    Be the first to share an insight.
                 </div>
             ) : (
                 <div className="flex flex-col gap-6">

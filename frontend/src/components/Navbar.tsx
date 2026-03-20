@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
+import UserMenu from "./UserMenu";
 import { useEffect, useState, useRef } from "react";
 import { Home, Newspaper, Wrench, Menu } from "lucide-react";
 
@@ -83,6 +84,7 @@ export default function Navbar() {
                         {/* Actions */}
                         <div className="flex items-center space-x-4">
                             <ThemeToggle />
+                            <UserMenu />
 
                             <div className="relative">
                                 <button

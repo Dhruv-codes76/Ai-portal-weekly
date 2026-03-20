@@ -105,6 +105,9 @@ model Comment {
   id          Int      @id @default(autoincrement())
   articleId   String // Maps to news slug/id
   anonymousId String
+  userId      String?
+  userName    String?
+  userAvatar  String?
   commentText String
   parentId    String?
   likes       Int      @default(0)

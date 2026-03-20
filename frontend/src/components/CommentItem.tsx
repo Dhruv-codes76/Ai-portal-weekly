@@ -10,6 +10,9 @@ import { useRouter } from "next/navigation";
 type Comment = {
     id: string;
     anonymous_id: string;
+    user_id?: string;
+    user_name?: string;
+    user_avatar?: string;
     comment_text: string;
     likes: number;
     created_at: string;
@@ -36,20 +39,35 @@ export default function CommentItem({ comment, articleId, isTopInsight = false }
         <article id={`comment-${comment.id}`} className={`p-5 md:p-6 rounded-2xl border transition-all duration-300 hover:bg-white/[0.03] ${isTopInsight ? 'border-amber-500/30 bg-amber-500/5 shadow-[0_4px_30px_rgba(245,158,11,0.1)]' : 'border-white/10 bg-white/[0.02]'}`}>
 
             <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center shrink-0 shadow-inner">
-                    <span className="text-sm font-bold text-white/70">
-                        {comment.anonymous_id.substring(0, 2).toUpperCase()}
-                    </span>
+                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden flex items-center justify-center shrink-0 shadow-inner bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
+                    {comment.user_avatar ? (
+                        <img
+                            src={comment.user_avatar}
+                            alt={comment.user_name || "User avatar"}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                        />
+                    ) : comment.user_name ? (
+                        <span className="text-sm font-bold text-white/70">
+                            {comment.user_name.substring(0, 1).toUpperCase()}
+                        </span>
+                    ) : (
+                        <span className="text-sm font-bold text-white/70">
+                            {comment.anonymous_id.substring(0, 2).toUpperCase()}
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-sm text-foreground">
-                            Anonymous
+                            {comment.user_name ? comment.user_name : 'Anonymous'}
                         </span>
-                        <span className="text-xs text-muted-foreground/50 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5">
-                            {comment.anonymous_id.substring(0, 6)}
-                        </span>
+                        {!comment.user_id && (
+                            <span className="text-xs text-muted-foreground/50 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5">
+                                {comment.anonymous_id.substring(0, 6)}
+                            </span>
+                        )}
                         <span className="text-xs text-muted-foreground ml-auto hidden sm:block">
                             {formatDistanceToNow(new Date(comment.created_at))} ago
                         </span>
