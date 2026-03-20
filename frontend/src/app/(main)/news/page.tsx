@@ -1,4 +1,5 @@
-import NewsReelContainer from "./NewsReelContainer";
+import MobileReelsView from "@/components/MobileReelsView";
+import DesktopNewsList from "@/components/DesktopNewsList";
 import { getNews } from "@/lib/api";
 
 export const metadata = {
@@ -12,5 +13,17 @@ export const revalidate = 0;
 export default async function NewsPage() {
     const { data: newsItems } = await getNews();
 
-    return <NewsReelContainer newsItems={newsItems || []} />;
+    return (
+        <>
+            {/* Mobile View (< 768px) */}
+            <div className="block md:hidden">
+                <MobileReelsView newsItems={newsItems || []} />
+            </div>
+
+            {/* Desktop View (>= 768px) */}
+            <div className="hidden md:block">
+                <DesktopNewsList newsItems={newsItems || []} />
+            </div>
+        </>
+    );
 }

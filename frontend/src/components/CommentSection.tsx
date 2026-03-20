@@ -1,53 +1,66 @@
-import CommentItem from "./CommentItem";
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import CommentForm from "./CommentForm";
-import { getComments } from "@/lib/commentsApi";
+import CommentItem from "./CommentItem";
 
 type Comment = {
     id: string;
-    anonymous_id: string;
-    user_id?: string;
-    user_name?: string;
-    user_avatar?: string;
-    comment_text: string;
-    likes: number;
+    news_id: string;
+    user_id: string;
+    content: string;
+    is_anonymous: boolean;
     created_at: string;
-    replies?: Comment[];
+    user_name: string;
+    user_avatar: string;
 };
 
-export default async function CommentSection({ articleId }: { articleId: string }) {
-    // Server-side fetch!
-    const comments: Comment[] = await getComments(articleId);
+export default function CommentSection({ articleId }: { articleId: string }) {
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const countAllComments = (list: Comment[]): number => {
-        let count = list.length;
-        for (const item of list) {
-            if (item.replies) count += countAllComments(item.replies);
-        }
-        return count;
+    const fetchComments = async () => {
+        setLoading(true);
+        // Use the view to get the joined data
+        const { data, error } = await supabase
+            .from('comments_with_profiles')
+            .select('*')
+            .eq('news_id', articleId)
+            .order('created_at', { ascending: false });
+
+        if (data) setComments(data as Comment[]);
+        if (error) console.error(error);
+        setLoading(false);
     };
 
-    const totalCommentsCount = countAllComments(comments);
+    useEffect(() => {
+        fetchComments();
 
-    // Identify the top insight by flattening and checking likes
-    let topInsight: Comment | null = null;
-    let maxLikes = -1;
+        // Listen for new comments on the base table
+        const channel = supabase
+            .channel(`public:comments:news_id=eq.${articleId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'comments',
+                    filter: `news_id=eq.${articleId}`
+                },
+                () => {
+                    // Re-fetch to get the joined profile data
+                    fetchComments();
+                }
+            )
+            .subscribe();
 
-    const findTopInsight = (list: Comment[]) => {
-        for (const c of list) {
-            if (c.likes > maxLikes) {
-                maxLikes = c.likes;
-                topInsight = c;
-            }
-            if (c.replies) findTopInsight(c.replies);
-        }
-    };
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [articleId]);
 
-    findTopInsight(comments);
-
-    // Only show top insight if it actually has likes
-    if (maxLikes === 0) {
-        topInsight = null;
-    }
+    const totalCommentsCount = comments.length;
 
     return (
         <section className="mt-16 border-t border-border pt-12">
@@ -58,40 +71,22 @@ export default async function CommentSection({ articleId }: { articleId: string 
 
             <CommentForm articleId={articleId} />
 
-            {comments.length === 0 ? (
+            {loading ? (
+                <div className="py-12 flex justify-center">
+                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+            ) : comments.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground border-2 border-dashed border-border rounded-xl">
                     Be the first to share an insight.
                 </div>
             ) : (
-                <div className="flex flex-col gap-6">
-                    {topInsight && (
-                        <div className="mb-8">
-                            <CommentItem
-                                key={`top-${(topInsight as Comment).id}`}
-                                comment={topInsight as Comment}
-                                articleId={articleId}
-                                isTopInsight={true}
-                            />
+                <div className="flex flex-col gap-6 mt-8">
+                    <h3 className="text-xl font-bold font-sans tracking-tight mb-2">Discussion</h3>
+                    {comments.map(comment => (
+                        <div key={comment.id}>
+                            <CommentItem comment={comment} />
                         </div>
-                    )}
-
-                    {(comments.length > 0 || totalCommentsCount > 0) && (
-                        <div className="mt-2 flex flex-col gap-6">
-                            <h3 className="text-xl font-bold font-sans tracking-tight mb-2">Discussion</h3>
-                            {comments.map(comment => {
-                                // Don't show the exact same top insight in the root list if we can help it,
-                                // but if it's a child, we still need its parent to render. For simplicity in a threaded view:
-                                return (
-                                    <div key={comment.id} className={comment.id === (topInsight as Comment | null)?.id ? 'opacity-80' : ''}>
-                                        <CommentItem
-                                            comment={comment}
-                                            articleId={articleId}
-                                        />
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )}
+                    ))}
                 </div>
             )}
         </section>

@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import NewsReelItem from "@/components/NewsReelItem";
 import EmptyState from "@/components/EmptyState";
+import { useRouter } from "next/navigation";
 
-export default function NewsReelContainer({ newsItems }: { newsItems: any[] }) {
+export default function MobileReelsView({ newsItems }: { newsItems: any[] }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
     const [isInteracting, setIsInteracting] = useState(false);
     const interactionTimeout = useRef<NodeJS.Timeout>(null);
+    const router = useRouter();
 
     // Intersection Observer to track active slide
     useEffect(() => {
@@ -60,6 +62,10 @@ export default function NewsReelContainer({ newsItems }: { newsItems: any[] }) {
         return () => clearInterval(interval);
     }, [activeIndex, newsItems, isInteracting]);
 
+    const handleDoubleTap = (slug: string) => {
+        router.push(`/news/${slug}`);
+    };
+
     if (!newsItems || newsItems.length === 0) {
         return (
             <div className="flex items-center justify-center h-[calc(100vh-64px)] w-full">
@@ -71,7 +77,7 @@ export default function NewsReelContainer({ newsItems }: { newsItems: any[] }) {
     return (
         <div
             ref={containerRef}
-            className="h-[calc(100vh-64px)] md:h-[calc(100vh-80px)] w-full overflow-y-scroll snap-y snap-mandatory bg-black hide-scrollbar"
+            className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory bg-black hide-scrollbar"
             onScroll={handleInteraction}
             onTouchStart={handleInteraction}
             onMouseDown={handleInteraction}
@@ -86,6 +92,7 @@ export default function NewsReelContainer({ newsItems }: { newsItems: any[] }) {
                     key={item._id || item.id || index}
                     data-index={index}
                     className="h-full w-full snap-start snap-always relative flex items-center justify-center"
+                    onDoubleClick={() => handleDoubleTap(item.slug)}
                 >
                     <NewsReelItem
                         news={{...item, trending: index < 2}}
