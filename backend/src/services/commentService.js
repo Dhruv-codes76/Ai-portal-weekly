@@ -26,14 +26,22 @@ class CommentService {
     }
 
     async createComment(data, req) {
-        const { article_id, comment_text, parent_id } = data;
-        const anonymous_id = generateAnonymousId(req);
+        const { article_id, comment_text, parent_id, user_id, user_name, user_avatar } = data;
+
+        let anonymous_id = 'AUTHED';
+        if (!user_id) {
+            anonymous_id = generateAnonymousId(req);
+        }
+
         const safeText = this.validateCommentText(comment_text);
 
         return await prisma.comment.create({
             data: {
                 articleId: article_id,
                 anonymousId: anonymous_id,
+                userId: user_id || null,
+                userName: user_name || null,
+                userAvatar: user_avatar || null,
                 commentText: safeText,
                 parentId: parent_id || null,
             }
@@ -50,6 +58,9 @@ class CommentService {
             id: c.id.toString(),
             article_id: c.articleId,
             anonymous_id: c.anonymousId,
+            user_id: c.userId,
+            user_name: c.userName,
+            user_avatar: c.userAvatar,
             comment_text: c.commentText,
             parent_id: c.parentId,
             likes: c.likes,
