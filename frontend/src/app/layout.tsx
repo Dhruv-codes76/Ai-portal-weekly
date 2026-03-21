@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ThemeRegistry from "@/components/ThemeRegistry";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import AppLevelThemeController from "@/components/AppLevelThemeController";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -37,15 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans flex flex-col min-h-[100dvh] bg-background text-foreground antialiased relative`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-        >
-          <ThemeRegistry>
-            {children}
-          </ThemeRegistry>
-        </ThemeProvider>
+        <AppLevelThemeController>
+          {children}
+        </AppLevelThemeController>
       </body>
     </html>
   );
