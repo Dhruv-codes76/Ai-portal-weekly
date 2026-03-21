@@ -212,7 +212,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                     <div className="flex justify-between items-center h-14 md:h-16 relative">
                         <Link href="/" className="flex items-center gap-2 md:gap-3 shrink-0 group">
                             <Logo size="lg" variant="icon" animated={true} disableLink={true} className="shrink-0 group-hover:scale-105 transition-transform" />
-                            <span className="font-bold tracking-tight text-lg md:text-xl text-gray-900 dark:text-white transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                            <span className="font-bold tracking-tight text-lg md:text-xl text-gray-900 dark:text-white transition-colors duration-300 ease-in-out group-hover:text-blue-600 dark:group-hover:text-blue-400">
                                 AI Portal
                             </span>
                         </Link>
@@ -225,7 +225,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                     <Link
                                         key={link.name}
                                         href={link.href} prefetch={true}
-                                        className={`text-sm tracking-wide transition-all duration-300 relative py-2 font-medium ${isActive ? "text-black font-bold dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
+                                        className={`text-sm tracking-wide transition-all duration-300 relative py-2 font-medium ${isActive ? "text-gray-900 font-bold dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                                             }`}
                                     >
                                         {link.name}
@@ -302,7 +302,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                 {isSearchOpen && (
                     <div
                         ref={dropdownRef}
-                        className="absolute top-full left-0 w-full bg-white dark:bg-zinc-900/95 backdrop-blur-2xl border-b border-gray-200 dark:border-zinc-800 shadow-2xl dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-b-2xl animate-in fade-in slide-in-from-top-4 duration-300 z-40 overflow-hidden"
+                        className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg backdrop-blur-2xl border-b border-gray-200 dark:border-zinc-800 dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-b-2xl animate-in fade-in slide-in-from-top-4 duration-300 z-40 overflow-hidden"
                     >
                         <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-h-[70vh] overflow-y-auto">
                             {!debouncedQuery.trim() ? (
@@ -310,7 +310,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                     {/* Recent Searches */}
                                     <div className={recentSearches.length > 0 ? "block" : "hidden md:block opacity-50 pointer-events-none"}>
                                         <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
-                                            <h3 className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">Recent Searches</h3>
+                                            <h3 className="text-xs font-semibold tracking-wider text-gray-900 dark:text-gray-400 uppercase transition-colors duration-300 ease-in-out">Recent Searches</h3>
                                             {recentSearches.length > 0 && (
                                                 <button onClick={clearRecentSearches} className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">Clear</button>
                                             )}
@@ -323,10 +323,10 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                                             setSearchQuery(query);
                                                             inputRef.current?.focus();
                                                         }}
-                                                        className="w-full text-left px-3 py-2.5 text-sm text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 premium-active rounded-lg transition-colors duration-200 flex items-center group"
+                                                        className="w-full text-left px-3 py-2.5 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 premium-active rounded-lg transition-colors duration-200 flex items-center group"
                                                     >
-                                                        <Clock className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-white transition-colors" />
-                                                        <span className="truncate flex-1 font-medium text-gray-900 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{query}</span>
+                                                        <Clock className="w-4 h-4 mr-3 text-gray-900 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-white transition-colors" />
+                                                        <span className="truncate flex-1 font-medium text-gray-900 dark:text-white transition-colors duration-300 ease-in-out group-hover:text-black dark:group-hover:text-white">{query}</span>
                                                     </button>
                                                 </li>
                                             )) : (
@@ -339,7 +339,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                     <div>
                                         <div className="flex items-center mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
                                             <TrendingUp className="w-4 h-4 mr-2 text-rose-500 dark:text-rose-400" />
-                                            <h3 className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">Trending Now</h3>
+                                            <h3 className="text-xs font-semibold tracking-wider text-gray-900 dark:text-gray-400 uppercase transition-colors duration-300 ease-in-out">Trending Now</h3>
                                         </div>
                                         <ul className="space-y-1">
                                             {trendingTopics.map((topic, idx) => (
@@ -349,10 +349,10 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                                             setSearchQuery(topic);
                                                             inputRef.current?.focus();
                                                         }}
-                                                        className="w-full text-left px-3 py-2.5 text-sm text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 premium-active rounded-lg transition-colors duration-200 flex items-center group"
+                                                        className="w-full text-left px-3 py-2.5 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 premium-active rounded-lg transition-colors duration-200 flex items-center group"
                                                     >
-                                                        <Search className="w-4 h-4 mr-3 text-gray-400 dark:text-gray-500 group-hover:text-rose-500 dark:group-hover:text-white transition-colors shrink-0" />
-                                                        <span className="truncate flex-1 font-medium text-gray-900 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{topic}</span>
+                                                        <Search className="w-4 h-4 mr-3 text-gray-900 dark:text-gray-500 group-hover:text-rose-500 dark:group-hover:text-white transition-colors shrink-0" />
+                                                        <span className="truncate flex-1 font-medium text-gray-900 dark:text-white transition-colors duration-300 ease-in-out group-hover:text-black dark:group-hover:text-white">{topic}</span>
                                                     </button>
                                                 </li>
                                             ))}
@@ -362,7 +362,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                             ) : (
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
-                                        <h3 className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">Results for &quot;{debouncedQuery}&quot;</h3>
+                                        <h3 className="text-xs font-semibold tracking-wider text-gray-900 dark:text-gray-400 uppercase transition-colors duration-300 ease-in-out">Results for &quot;{debouncedQuery}&quot;</h3>
                                         <span className="text-xs text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-full">{searchResults.length} found</span>
                                     </div>
 
@@ -418,7 +418,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                 key={link.name}
                                 href={link.href} prefetch={true}
                                 className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 relative group ${
-                                    isActive ? "text-black font-bold dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
+                                    isActive ? "text-gray-900 font-bold dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                                 }`}
                             >
                                 <div className="relative flex items-center justify-center">
@@ -429,7 +429,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                 </div>
                                 <span className={`text-[10px] font-medium tracking-wide transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}>{link.name}</span>
                                 {isActive && (
-                                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-black dark:bg-white rounded-b-full shadow-[0_0_8px_currentColor]"></div>
+                                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gray-900 dark:bg-white rounded-b-full shadow-[0_0_8px_currentColor]"></div>
                                 )}
                             </Link>
                         );
@@ -444,7 +444,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                             }, 300);
                         }}
                         className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 relative group ${
-                            isSearchOpen ? "text-black font-bold dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
+                            isSearchOpen ? "text-gray-900 font-bold dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                         }`}
                     >
                         <div className="relative flex items-center justify-center">
@@ -455,7 +455,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                         </div>
                         <span className={`text-[10px] font-medium tracking-wide transition-all ${isSearchOpen ? 'opacity-100' : 'opacity-70'}`}>Search</span>
                         {isSearchOpen && (
-                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-black dark:bg-white rounded-b-full shadow-[0_0_8px_currentColor]"></div>
+                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gray-900 dark:bg-white rounded-b-full shadow-[0_0_8px_currentColor]"></div>
                         )}
                     </button>
                 </div>
