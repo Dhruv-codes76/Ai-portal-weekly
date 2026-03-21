@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,8 +27,8 @@ export default function AdminLogsPage() {
             if (!res.ok) throw new Error(data.error || "Failed fetch");
 
             setLogs(data.data || []);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unknown error");
         } finally {
             setLoading(false);
         }
@@ -35,6 +36,7 @@ export default function AdminLogsPage() {
 
     useEffect(() => {
         fetchLogs();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

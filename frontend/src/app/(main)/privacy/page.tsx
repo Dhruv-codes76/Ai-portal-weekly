@@ -27,9 +27,9 @@ export default function PrivacyPage() {
                         Your privacy is critically important to us. At AI MVP, we have a few fundamental principles:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 mt-4 mb-8">
-                        <li>We don't ask you for personal information unless we truly need it.</li>
-                        <li>We don't share your personal information with anyone except to comply with the law, develop our products, or protect our rights.</li>
-                        <li>We don't store personal information on our servers unless required for the on-going operation of one of our services.</li>
+                        <li>We don&apos;t ask you for personal information unless we truly need it.</li>
+                        <li>We don&apos;t share your personal information with anyone except to comply with the law, develop our products, or protect our rights.</li>
+                        <li>We don&apos;t store personal information on our servers unless required for the on-going operation of one of our services.</li>
                     </ul>
 
                     <h2 className="text-2xl font-bold text-foreground mt-12 mb-4">1. Information We Collect</h2>

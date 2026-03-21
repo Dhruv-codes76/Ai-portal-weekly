@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -20,13 +21,13 @@ export default function CommentSection({ articleId }: { articleId: string }) {
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchComments = async () => {
+    const fetchComments = async (articleIdToFetch: string) => {
         setLoading(true);
         // Use the view to get the joined data
         const { data, error } = await supabase
             .from('comments_with_profiles')
             .select('*')
-            .eq('news_id', articleId)
+            .eq('news_id', articleIdToFetch)
             .order('created_at', { ascending: false });
 
         if (data) setComments(data as Comment[]);
@@ -35,7 +36,7 @@ export default function CommentSection({ articleId }: { articleId: string }) {
     };
 
     useEffect(() => {
-        fetchComments(); // eslint-disable-line react-hooks/exhaustive-deps
+        fetchComments(articleId);
 
         // Listen for new comments on the base table
         const channel = supabase
@@ -50,7 +51,7 @@ export default function CommentSection({ articleId }: { articleId: string }) {
                 },
                 () => {
                     // Re-fetch to get the joined profile data
-                    fetchComments(); // eslint-disable-line react-hooks/exhaustive-deps
+                    fetchComments(articleId);
                 }
             )
             .subscribe();

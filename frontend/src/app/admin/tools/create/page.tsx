@@ -67,8 +67,8 @@ export default function CreateToolPage() {
             if (!res.ok) throw new Error(data.error || "Failed to add tool");
 
             router.push("/admin/tools");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unknown error");
             setLoading(false);
         }
     };

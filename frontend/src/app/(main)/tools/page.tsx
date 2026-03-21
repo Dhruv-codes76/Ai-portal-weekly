@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ToolCard from "@/components/ToolCard";
 import { getTools } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";

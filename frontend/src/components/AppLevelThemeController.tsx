@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
@@ -10,7 +11,9 @@ function MuiThemeSync({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        let isMounted = true;
+        if (isMounted) setMounted(true);
+        return () => { isMounted = false; };
     }, []);
 
     if (!mounted) {

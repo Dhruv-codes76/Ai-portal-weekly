@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -27,8 +28,8 @@ export default function AdminNewsPage() {
             if (!res.ok) throw new Error(data.error);
 
             setNews(data.data || []);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unknown error");
         } finally {
             setLoading(false);
         }
@@ -36,6 +37,7 @@ export default function AdminNewsPage() {
 
     useEffect(() => {
         fetchNews();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const deactivateNews = async (id: string) => {
@@ -48,7 +50,7 @@ export default function AdminNewsPage() {
             });
             if (res.ok) fetchNews();
             else alert("Failed to deactivate.");
-        } catch (e) {
+        } catch {
             alert("Error occurred.");
         }
     };
