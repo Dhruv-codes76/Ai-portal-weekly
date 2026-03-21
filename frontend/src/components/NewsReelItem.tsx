@@ -24,7 +24,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
     // Progress bar for auto-scroll
     useEffect(() => {
         if (!isActive || isInteracting || showShare || showComments) {
-            setProgress(0);
+            setProgress(0); // eslint-disable-line react-hooks/set-state-in-effect
             return;
         }
 

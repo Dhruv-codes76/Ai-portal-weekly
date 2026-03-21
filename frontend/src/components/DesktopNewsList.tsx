@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import Image from "next/image";
+
 
 export default function DesktopNewsList({ newsItems }: { newsItems: any[] }) {
     if (!newsItems || newsItems.length === 0) {
