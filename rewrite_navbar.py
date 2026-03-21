@@ -1,4 +1,12 @@
+import re
 
+with open('frontend/src/components/Navbar.tsx', 'r') as f:
+    content = f.read()
+
+# Add useDebounce hook implementation at the top level or inside the component
+# Since we need it, let's just use a simple timeout effect inside the component instead of a custom hook file for now to keep it self-contained.
+
+new_component_code = """
 "use client";
 
 import Link from "next/link";
@@ -7,7 +15,6 @@ import { ThemeToggle } from "./ThemeToggle";
 import UserMenu from "./UserMenu";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { Home, Newspaper, Wrench, Menu, Search, X, Clock, TrendingUp } from "lucide-react";
-import Logo from "./Logo";
 
 export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
     const pathname = usePathname();
@@ -141,7 +148,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
             if (title.includes(query) || description.includes(query)) return true;
 
             // 2. Split query by spaces and check if all words exist
-            const words = query.split(/\s+/).filter(Boolean);
+            const words = query.split(/\\s+/).filter(Boolean);
             if (words.length > 1) {
                 const allWordsMatch = words.every(word => title.includes(word) || description.includes(word));
                 if (allWordsMatch) return true;
@@ -182,7 +189,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
     // Helper for highlight matching text
     const highlightMatch = (text: string, query: string) => {
         if (!query.trim()) return text;
-        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')})`, 'gi');
         const parts = text.split(regex);
         return parts.map((part, i) =>
             regex.test(part) ?
@@ -208,10 +215,14 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                     isVisible ? "translate-y-0" : "-translate-y-full"
                 } ${isMobileReels && !isSearchOpen ? "hidden md:block" : "block"}`}
             >
-                <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-14 md:h-16 relative">
                         {/* Logo */}
-                        <Logo size="md" className="shrink-0" />
+                        <Link href="/" className="flex items-center group shrink-0">
+                            <span className="font-sans font-bold text-lg md:text-xl tracking-tight text-gray-900 dark:text-white transition-transform duration-300 group-hover:scale-[1.02]">
+                                AI Portal
+                            </span>
+                        </Link>
 
                         {/* Desktop Nav - Hide when search is expanded on smaller screens */}
                         <div className={`hidden md:flex space-x-8 lg:space-x-12 items-center absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${isSearchOpen ? 'opacity-0 md:opacity-100' : 'opacity-100'}`}>
@@ -463,3 +474,7 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
         </>
     );
 }
+"""
+
+with open('frontend/src/components/Navbar.tsx', 'w') as f:
+    f.write(new_component_code)
