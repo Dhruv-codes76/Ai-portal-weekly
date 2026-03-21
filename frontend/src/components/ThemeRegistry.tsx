@@ -10,11 +10,12 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        // eslint-disable-next-line
         setMounted(true);
     }, []);
 
-    // Wait until mounted to avoid hydration mismatch
+    // If we only return ThemeProvider from MUI, NextThemesProvider is wrapping it in layout.tsx.
+    // However, the issue might be related to MUI's CSS injection order vs Tailwind.
+
     if (!mounted) {
         return <ThemeProvider theme={darkTheme}>{children}</ThemeProvider>;
     }
