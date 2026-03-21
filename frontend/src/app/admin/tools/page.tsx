@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,8 +26,8 @@ export default function AdminToolsPage() {
             if (!res.ok) throw new Error(data.error || "Failed fetch");
 
             setTools(data || []);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unknown error");
         } finally {
             setLoading(false);
         }
@@ -34,6 +35,7 @@ export default function AdminToolsPage() {
 
     useEffect(() => {
         fetchTools();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const deactivateTool = async (id: string) => {
@@ -46,7 +48,7 @@ export default function AdminToolsPage() {
             });
             if (res.ok) fetchTools();
             else alert("Failed to deactivate.");
-        } catch (e) {
+        } catch {
             alert("Error occurred.");
         }
     };

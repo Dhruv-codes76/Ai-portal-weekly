@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -15,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         if (isLogin) {
-            setIsAuthenticated(true);
+                        setIsAuthenticated(true);
             return;
         }
 

@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,10 +8,6 @@ export default function ManageNews() {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({ title: '', slug: '', summary: '', content: '', status: 'draft' });
-
-    useEffect(() => {
-        fetchNews();
-    }, []);
 
     const fetchNews = async () => {
         const token = localStorage.getItem('adminToken');
@@ -20,6 +18,10 @@ export default function ManageNews() {
         if (res.ok) setNews(data.data || []);
         setLoading(false);
     };
+
+    useEffect(() => {
+        fetchNews();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

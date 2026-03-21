@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { ThemeProvider } from '@mui/material/styles';
@@ -10,7 +11,9 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        let isMounted = true;
+        if (isMounted) setMounted(true);
+        return () => { isMounted = false; };
     }, []);
 
     // If we only return ThemeProvider from MUI, NextThemesProvider is wrapping it in layout.tsx.

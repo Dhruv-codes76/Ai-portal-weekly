@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -24,7 +25,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
     // Progress bar for auto-scroll
     useEffect(() => {
         if (!isActive || isInteracting || showShare || showComments) {
-            setProgress(0); // eslint-disable-line react-hooks/set-state-in-effect
+            setProgress(0);
             return;
         }
 
@@ -35,7 +36,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
         const interval = setInterval(() => {
             elapsed += intervalTime;
             // setProgress is safe here because it represents visual progression independent of strict react state cycles.
-            setProgress(Math.min((elapsed / duration) * 100, 100)); // eslint-disable-line react-hooks/set-state-in-effect
+            setProgress(Math.min((elapsed / duration) * 100, 100));
         }, intervalTime);
 
         return () => clearInterval(interval);

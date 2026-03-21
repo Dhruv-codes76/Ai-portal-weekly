@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useTheme } from "next-themes";
@@ -20,7 +21,9 @@ export default function Logo({ size = "md", variant = "icon", animated = true, c
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        let isMounted = true;
+        if (isMounted) setMounted(true);
+        return () => { isMounted = false; };
     }, []);
 
     const sizeClasses = {

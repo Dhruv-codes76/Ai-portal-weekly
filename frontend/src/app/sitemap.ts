@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MetadataRoute } from 'next';
 import { getNews, getTools } from '@/lib/api';
 

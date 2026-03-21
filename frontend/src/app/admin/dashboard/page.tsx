@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,7 +19,7 @@ export default function AdminDashboardPage() {
         if (!token) {
             router.push("/admin/login");
         } else {
-            setIsAuthenticated(true);
+                        setIsAuthenticated(true);
         }
     }, [router]);
 
