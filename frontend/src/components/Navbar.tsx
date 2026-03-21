@@ -76,7 +76,7 @@ export default function Navbar() {
                                 return (
                                     <Link
                                         key={link.name}
-                                        href={link.href}
+                                        href={link.href} prefetch={true}
                                         className={`text-sm tracking-wide transition-all duration-300 relative py-2 font-medium ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                                             }`}
                                     >
@@ -124,7 +124,7 @@ export default function Navbar() {
                         return (
                             <Link
                                 key={link.name}
-                                href={link.href}
+                                href={link.href} prefetch={true}
                                 className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 relative group ${
                                     isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                                 }`}

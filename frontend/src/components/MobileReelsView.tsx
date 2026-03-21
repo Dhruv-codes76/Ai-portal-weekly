@@ -68,7 +68,7 @@ export default function MobileReelsView({ newsItems }: { newsItems: any[] }) {
 
     if (!newsItems || newsItems.length === 0) {
         return (
-            <div className="flex items-center justify-center h-[100dvh] w-screen bg-black">
+            <div className="flex items-center justify-center h-[100dvh] w-screen bg-background">
                  <EmptyState message="No transmissions available." />
             </div>
         );
@@ -77,7 +77,7 @@ export default function MobileReelsView({ newsItems }: { newsItems: any[] }) {
     return (
         <div
             ref={containerRef}
-            className="h-[100dvh] w-screen overflow-y-scroll snap-y snap-mandatory bg-black hide-scrollbar fixed top-0 left-0 right-0 bottom-0 z-0 m-0 p-0"
+            className="h-[100dvh] w-screen overflow-y-scroll snap-y snap-mandatory bg-background hide-scrollbar fixed top-0 left-0 right-0 bottom-0 z-0 m-0 p-0"
             onScroll={handleInteraction}
             onTouchStart={handleInteraction}
             onMouseDown={handleInteraction}
