@@ -7,8 +7,26 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "AI News and Tools MVP",
-  description: "Your daily dose of AI News and the best AI Tools available.",
+  title: {
+    template: "%s | AI Intelligence Portal",
+    default: "AI Intelligence Portal | Daily News & Tools",
+  },
+  description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
+  keywords: ["AI news", "artificial intelligence", "machine learning", "tech news", "AI tools", "ChatGPT"],
+  openGraph: {
+    title: "AI Intelligence Portal",
+    description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
+    url: "https://ai-mvp.vercel.app",
+    siteName: "AI Intelligence Portal",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Intelligence Portal",
+    description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
+  },
+  metadataBase: new URL("https://ai-mvp.vercel.app"),
 };
 
 export default function RootLayout({
@@ -18,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans flex flex-col min-h-screen bg-transparent relative`}>
+      <body className={`${inter.variable} font-sans flex flex-col min-h-[100dvh] bg-background text-foreground antialiased relative`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
