@@ -51,6 +51,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ id: string 
                     twitterImage: article.twitterImage || "",
                     featuredImage: article.featuredImage || "",
                     featuredImageAlt: article.featuredImageAlt || "",
+                    focusKeyphrase: article.focusKeyphrase || "",
                 });
             } catch (err) {
                 setError(err instanceof Error ? err.message : String(err));

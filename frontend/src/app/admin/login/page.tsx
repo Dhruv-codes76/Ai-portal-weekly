@@ -36,7 +36,8 @@ export default function AdminLoginPage() {
             }
 
             if (!res.ok) {
-                throw new Error(data?.error || `Login failed (Status: ${res.status})`);
+                const errorMessage = data?.message || data?.error?.message || data?.error || `Login failed (Status: ${res.status})`;
+                throw new Error(typeof errorMessage === 'string' ? errorMessage : "An error occurred during login");
             }
 
             // Store token securely

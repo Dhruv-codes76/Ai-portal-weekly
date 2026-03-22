@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { User, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 
 export default function UserMenu() {
@@ -21,7 +22,7 @@ export default function UserMenu() {
 
         // Listen for auth changes
         const { data: authListener } = supabase.auth.onAuthStateChange(
-            (event, session) => {
+            (event: AuthChangeEvent, session: Session | null) => {
                 setUser(session?.user || null);
             }
         );

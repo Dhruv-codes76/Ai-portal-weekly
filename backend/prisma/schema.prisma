@@ -58,6 +58,7 @@ model Tool {
   keywords           String[]
   featuredImage      String?
   featuredImageAlt   String?
+  focusKeyphrase     String?
   status             DocStatus   @default(DRAFT)
   isDeleted          Boolean     @default(false)
   createdAt          DateTime    @default(now())
@@ -90,6 +91,7 @@ model News {
   keywords           String[]
   featuredImage      String?
   featuredImageAlt   String?
+  focusKeyphrase     String?
   status             DocStatus @default(DRAFT)
   isDeleted          Boolean   @default(false)
   createdAt          DateTime  @default(now())

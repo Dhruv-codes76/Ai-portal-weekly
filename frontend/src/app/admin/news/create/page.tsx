@@ -30,6 +30,7 @@ export default function CreateNewsPage() {
         twitterImage: "",
         featuredImage: "",
         featuredImageAlt: "",
+        focusKeyphrase: "",
     };
 
     const handleSubmit = async (formData: NewsFormData) => {

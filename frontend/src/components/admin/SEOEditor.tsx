@@ -14,6 +14,7 @@ interface SEOData {
     twitterDescription?: string;
     twitterImage?: string;
     keywords?: string[];
+    focusKeyphrase: string;
 }
 
 interface SEOEditorProps {
@@ -120,38 +121,72 @@ export default function SEOEditor({ data, onChange, baseSlug, type }: SEOEditorP
                                 </span>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <label className="text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5">Search Description</label>
-                            <textarea
-                                name="seoMetaDescription"
-                                rows={3}
-                                value={data.seoMetaDescription}
-                                onChange={handleChange}
-                                placeholder="Target: 140-160 characters"
-                                className={`w-full p-4 bg-transparent border-2 focus:border-foreground focus:outline-none text-sm font-medium transition-all resize-none ${
-                                    data.seoMetaDescription.length >= 140 && data.seoMetaDescription.length <= 160 
-                                    ? "border-green-500/50" 
-                                    : "border-border"
-                                }`}
-                            />
-                            <div className="flex justify-between items-center px-1">
-                                <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden mr-4">
-                                    <div 
-                                        className={`h-full transition-all ${
-                                            data.seoMetaDescription.length < 140 || data.seoMetaDescription.length > 160 
-                                            ? "bg-red-500" 
-                                            : "bg-green-500"
-                                        }`} 
-                                        style={{ width: `${Math.min(100, (data.seoMetaDescription.length / 160) * 100)}%` }}
-                                    />
+
+                        <div className="space-y-6 md:col-span-2 border-t-2 border-border pt-8 mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5 text-secondary">
+                                    URL Slug & Permanlink
+                                </label>
+                                <div className="p-4 bg-muted/20 border-2 border-border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <code className="text-[10px] font-bold text-foreground bg-foreground/10 px-2 py-0.5 rounded">
+                                            /{type === "news" ? "news" : "tools"}/<span className="text-secondary">{baseSlug}</span>
+                                        </code>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden mr-4">
+                                            <div 
+                                                className={`h-full transition-all ${
+                                                    baseSlug.length > 60 ? "bg-red-500" : "bg-green-500"
+                                                }`} 
+                                                style={{ width: `${Math.min(100, (baseSlug.length / 60) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase tracking-tighter ${
+                                            baseSlug.length > 60 ? "text-red-500" : "text-muted-foreground"
+                                        }`}>
+                                            {baseSlug.length} / 60
+                                        </span>
+                                    </div>
                                 </div>
-                                <span className={`text-[10px] font-black uppercase tracking-tighter ${
-                                    (data.seoMetaDescription.length > 0 && data.seoMetaDescription.length < 140) || data.seoMetaDescription.length > 160 
-                                    ? "text-red-500" 
-                                    : "text-muted-foreground"
-                                }`}>
-                                    {data.seoMetaDescription.length} / 140-160
-                                </span>
+                                <p className="text-[10px] text-muted-foreground italic leading-tight">
+                                    Slug is automatically managed by your Focus Keyphrase at the top of the page.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5">Search Description</label>
+                                <textarea
+                                    name="seoMetaDescription"
+                                    rows={3}
+                                    value={data.seoMetaDescription}
+                                    onChange={handleChange}
+                                    placeholder="Target: 140-160 characters"
+                                    className={`w-full p-4 bg-transparent border-2 focus:border-foreground focus:outline-none text-sm font-medium transition-all resize-none ${
+                                        data.seoMetaDescription.length >= 140 && data.seoMetaDescription.length <= 160 
+                                        ? "border-green-500/50" 
+                                        : "border-border"
+                                    }`}
+                                />
+                                <div className="flex justify-between items-center px-1">
+                                    <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden mr-4">
+                                        <div 
+                                            className={`h-full transition-all ${
+                                                data.seoMetaDescription.length < 140 || data.seoMetaDescription.length > 160 
+                                                ? "bg-red-500" 
+                                                : "bg-green-500"
+                                            }`} 
+                                            style={{ width: `${Math.min(100, (data.seoMetaDescription.length / 160) * 100)}%` }}
+                                        />
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase tracking-tighter ${
+                                        (data.seoMetaDescription.length > 0 && data.seoMetaDescription.length < 140) || data.seoMetaDescription.length > 160 
+                                        ? "text-red-500" 
+                                        : "text-muted-foreground"
+                                    }`}>
+                                        {data.seoMetaDescription.length} / 140-160
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

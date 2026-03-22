@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import SEOEditor from "@/components/admin/SEOEditor";
 import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
 import RichTextEditor from "@/components/admin/RichTextEditor";
-import { Sparkles, Save, Eye, AlertCircle, Search } from "lucide-react";
+import { Globe, Share2, Twitter, Info, Sparkles, Wand2, Save, Eye, AlertCircle, Search } from "lucide-react";
 import { analyzeReadability } from "@/utils/readabilityStats";
 
 export interface NewsFormData {
@@ -25,6 +25,7 @@ export interface NewsFormData {
     twitterImage: string;
     featuredImage: string;
     featuredImageAlt: string;
+    focusKeyphrase: string;
     featuredImageFile?: File;
 }
 
@@ -37,8 +38,12 @@ interface NewsEditorProps {
 
 export default function NewsEditor({ initialData, onSubmit, loading, isEdit = false }: NewsEditorProps) {
     const [formData, setFormData] = useState<NewsFormData>(initialData);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isOptimizing, setIsOptimizing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [aiTips, setAiTips] = useState<string[]>([]);
+    const [aiHealthMetrics, setAiHealthMetrics] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
-    const [editMode, setEditMode] = useState<"simple" | "advanced">("simple");
 
     useEffect(() => {
         setFormData(initialData);
@@ -46,62 +51,130 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        
+        setFormData(prev => {
+            const newState = { ...prev, [name]: value };
+            
+            // Auto-generate logic
+            if (!isEdit) {
+                if (name === "focusKeyphrase" && value) {
+                    // 1. Slug from keyphrase
+                    newState.slug = value.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/(^-|-$)+/g, '')
+                        .substring(0, 60);
 
-        // Auto-generate slug from title
-        if (name === "title" && !formData.slug && !isEdit) {
-            setFormData(prev => ({
-                ...prev,
-                title: value,
-                slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
-            }));
-        }
+                    // 2. SEO Title from keyphrase (Keyphrase | Action | Brand)
+                    if (!prev.seoMetaTitle || prev.seoMetaTitle === prev.title) {
+                        const titlePattern = `${value.charAt(0).toUpperCase() + value.slice(1)} | Real-World AI Insights | AI Portal`;
+                        newState.seoMetaTitle = titlePattern.substring(0, 60);
+                    }
+
+                    // 3. Meta Description (Start with keyphrase)
+                    if (!prev.seoMetaDescription || prev.seoMetaDescription === prev.summary) {
+                        const descPattern = `Learn all about ${value}. We break down the reality, costs, and beginner-friendly tips for ${value} in this detailed guide.`;
+                        newState.seoMetaDescription = descPattern.substring(0, 160);
+                    }
+                } else if (name === "title" && !prev.focusKeyphrase && !newState.slug) {
+                    // Fallback to title if no focus keyphrase, but keep it shorter (max 60 chars)
+                    newState.slug = value.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/(^-|-$)+/g, '')
+                        .substring(0, 60)
+                        .replace(/-$/, '');
+                    
+                    if (!prev.seoMetaTitle) newState.seoMetaTitle = value.substring(0, 60);
+                }
+            }
+            
+            return newState;
+        });
     };
 
-    const handleAutoFillSEO = () => {
-        setFormData(prev => ({
-            ...prev,
-            seoMetaTitle: prev.title,
-            seoMetaDescription: prev.summary,
-            ogTitle: prev.title,
-            ogDescription: prev.summary,
-            ogImage: prev.featuredImage,
-            twitterTitle: prev.title,
-            twitterDescription: prev.summary,
-            twitterImage: prev.featuredImage
-        }));
+    const handleAutoSEO = async () => {
+        if (!formData.content || formData.content.length < 50) {
+            alert("Please add some content first so the AI can analyze it!");
+            return;
+        }
+
+        setIsOptimizing(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seo/optimize`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: formData.content,
+                    title: formData.title,
+                    focusKeyphrase: formData.focusKeyphrase,
+                    type: "news"
+                }),
+            });
+
+            if (!response.ok) throw new Error("Failed to optimize SEO");
+
+            const data = await response.json();
+            
+            setFormData(prev => ({
+                ...prev,
+                focusKeyphrase: data.focusKeyphrase,
+                seoMetaTitle: data.seoMetaTitle,
+                seoMetaDescription: data.seoMetaDescription,
+                slug: data.slug,
+                summary: data.summary || prev.summary,
+                featuredImageAlt: data.featuredImageAlt || prev.featuredImageAlt
+            }));
+            
+            if (data.improvementTips && Array.isArray(data.improvementTips)) {
+                setAiTips(data.improvementTips);
+            }
+            if (data.healthMetrics) {
+                setAiHealthMetrics(data.healthMetrics);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to reach the SEO Magic engine. Check your backend/API key.");
+        } finally {
+            setIsOptimizing(false);
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // If in simple mode, make sure SEO is auto-filled if empty
-        const finalData = { ...formData };
-        if (editMode === 'simple' && !finalData.seoMetaTitle) {
-            finalData.seoMetaTitle = finalData.title;
-            finalData.seoMetaDescription = finalData.summary;
-        }
-        onSubmit(finalData);
+        onSubmit(formData);
     };
 
     const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
     // Content Health & Readability Checks
-    const readability = useMemo(() => analyzeReadability(formData.content), [formData.content]);
+    const readability = useMemo(() => analyzeReadability({
+        content: formData.content,
+        keyphrase: formData.focusKeyphrase,
+        title: formData.title,
+        slug: formData.slug,
+        metaDescription: formData.seoMetaDescription,
+        imageAlt: formData.featuredImageAlt
+    }), [formData.content, formData.focusKeyphrase, formData.title, formData.slug, formData.seoMetaDescription, formData.featuredImageAlt]);
     
     const hasH1 = formData.content.includes("<h1>");
     const hasRealWorldRelevance = formData.content.toLowerCase().includes("real-world relevance");
     const hasHowItWorks = formData.content.toLowerCase().includes("how it works");
 
     const healthChecks = [
-        { label: "Headline provided", passed: !!formData.title },
-        { label: "Summary is descriptive", passed: formData.summary.length > 50 },
-        { label: "Structure: H1 Header", passed: hasH1 },
-        { label: "Structure: 'Real-World Relevance'", passed: hasRealWorldRelevance },
-        { label: "Structure: 'How it Works'", passed: hasHowItWorks },
+        { label: "Word Count (> 300)", passed: readability.wordCount >= 300, value: `${readability.wordCount} words` },
+        { label: "Focus Keyphrase in Title", passed: readability.keywordInTitle },
+        { label: "Focus Keyphrase in Intro", passed: readability.keywordInIntro },
+        { label: "Focus Keyphrase in H2", passed: readability.keywordInH2 },
+        { label: "Focus Keyphrase in Conclusion", passed: readability.keywordInConclusion },
+        { label: "Focus Keyphrase in Image Alt", passed: readability.keywordInImageAlt },
+        { label: "Focus Keyphrase in Slug", passed: readability.keywordInSlug },
+        { label: "Focus Keyphrase in Meta", passed: readability.keywordInMeta },
+        { label: "Keyphrase Density (0.5-2.5%)", passed: readability.keywordDensity >= 0.5 && readability.keywordDensity <= 2.5, value: `${readability.keywordDensity}%` },
         { label: "SEO Title (45-60)", passed: formData.seoMetaTitle.length >= 45 && formData.seoMetaTitle.length <= 60 },
         { label: "SEO Meta Desc (140-160)", passed: formData.seoMetaDescription.length >= 140 && formData.seoMetaDescription.length <= 160 },
-        { label: "Passive Voice (< 10%)", passed: readability.passiveVoicePercentage < 10, value: `${readability.passiveVoicePercentage}%` },
-        { label: "Transitions (25-30%)", passed: readability.transitionDensityPercentage >= 25, value: `${readability.transitionDensityPercentage}%` },
+        { label: "Short Paragraphs (< 150w)", passed: aiHealthMetrics ? aiHealthMetrics.hasShortParagraphs : !readability.hasLongParagraphs },
+        { label: "Varied Sentence Starts", passed: aiHealthMetrics ? aiHealthMetrics.variedSentenceStarts : readability.consecutiveSentenceStarts < 3, value: aiHealthMetrics ? null : `Max ${readability.consecutiveSentenceStarts} in a row` },
+        { label: "Passive Voice (< 10%)", passed: aiHealthMetrics ? aiHealthMetrics.passiveVoicePercentage < 10 : readability.passiveVoicePercentage < 10, value: `${aiHealthMetrics ? aiHealthMetrics.passiveVoicePercentage : readability.passiveVoicePercentage}%` },
+        { label: "Transitions (25-30%)", passed: aiHealthMetrics ? aiHealthMetrics.transitionsPercentage >= 25 : readability.transitionDensityPercentage >= 25, value: `${aiHealthMetrics ? aiHealthMetrics.transitionsPercentage : readability.transitionDensityPercentage}%` },
         { label: "Featured Image set", passed: !!formData.featuredImage },
     ];
 
@@ -232,29 +305,13 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
 
             {/* Left side: Editor Form */}
             <div className={`flex-1 space-y-12 ${activeTab === 'preview' ? 'hidden lg:block' : 'block'}`}>
-                {/* Mode Toggle */}
+                {/* Editor Header */}
                 <div className="flex items-center justify-between border-b-2 border-foreground pb-4 pt-2">
                     <div>
                         <h2 className="text-xl font-black uppercase tracking-tighter italic">Intelligence Brief Editor</h2>
                         <p className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase opacity-70">
-                            {editMode === 'simple' ? 'Simple Mode (Recommended)' : 'Advanced Professional Mode'}
+                            Advanced Professional Mode
                         </p>
-                    </div>
-                    <div className="flex bg-muted p-1">
-                        <button 
-                            type="button"
-                            onClick={() => setEditMode('simple')}
-                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest transition-all ${editMode === 'simple' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                            Simple
-                        </button>
-                        <button 
-                            type="button"
-                            onClick={() => setEditMode('advanced')}
-                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest transition-all ${editMode === 'advanced' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                            Advanced
-                        </button>
                     </div>
                 </div>
 
@@ -262,9 +319,10 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                 <section className="space-y-6">
                     <div className="flex items-center gap-3 border-b border-border pb-2">
                         <div className="w-8 h-8 rounded bg-foreground text-background flex items-center justify-center font-bold font-sans">1</div>
-                        <h2 className="text-xl font-bold uppercase tracking-widest">Story Content</h2>
+                        <h2 className="text-xl font-bold uppercase tracking-widest">Core Content</h2>
                     </div>
-                    
+
+                    {/* Headline FIRST */}
                     <div className="space-y-2">
                         <label className="text-sm font-bold tracking-widest uppercase block">Headline</label>
                         <input
@@ -278,19 +336,26 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Brief Summary</label>
-                        <textarea
-                            required
-                            name="summary"
-                            rows={3}
-                            value={formData.summary}
-                            onChange={handleChange}
-                            className="w-full p-4 bg-transparent border-2 border-border focus:border-foreground focus:outline-none transition-colors resize-y text-base"
-                            placeholder="Provide a quick overview for the audience..."
-                        />
+                    {/* Focus Keyphrase SECOND */}
+                    <div className="bg-secondary/5 border-2 border-secondary/20 p-6 space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black tracking-widest uppercase text-muted-foreground block">Focus Keyphrase (The SEO Driver)</label>
+                            <input
+                                required
+                                type="text"
+                                name="focusKeyphrase"
+                                value={formData.focusKeyphrase}
+                                onChange={handleChange}
+                                className="w-full p-4 bg-background border-2 border-secondary/30 focus:border-secondary focus:outline-none transition-colors text-lg font-bold placeholder:opacity-30"
+                                placeholder="e.g. apple watch ultra"
+                            />
+                            <p className="text-[10px] text-muted-foreground italic leading-tight">
+                                Auto-generates your URL slug, SEO title, and meta description.
+                            </p>
+                        </div>
                     </div>
-
+                    
+                    {/* Content SECOND — Write the blog */}
                     <div className="space-y-2">
                         <label className="text-sm font-bold tracking-widest uppercase block mb-2">Write your Story</label>
                         <RichTextEditor 
@@ -299,13 +364,38 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                             placeholder="Start writing the full article here..."
                         />
                     </div>
+
+                    {/* Generate SEO Button — prominently after content */}
+                    <button
+                        type="button"
+                        onClick={handleAutoSEO}
+                        disabled={isOptimizing}
+                        className="w-full flex items-center justify-center gap-3 py-4 bg-secondary text-white text-sm font-black uppercase tracking-widest hover:bg-secondary/80 transition-all rounded-lg shadow-lg disabled:opacity-50"
+                    >
+                        <Wand2 className={`w-5 h-5 ${isOptimizing ? 'animate-spin' : ''}`} />
+                        {isOptimizing ? "Generating SEO magic..." : "✨ Generate SEO (Auto-fills everything below)"}
+                    </button>
                 </section>
 
                 {/* Section 2: Media & Configuration */}
                 <section className="space-y-6">
                     <div className="flex items-center gap-3 border-b border-border pb-2">
                         <div className="w-8 h-8 rounded bg-foreground text-background flex items-center justify-center font-bold font-sans">2</div>
-                        <h2 className="text-xl font-bold uppercase tracking-widest">Cover & Settings</h2>
+                        <h2 className="text-xl font-bold uppercase tracking-widest">Generated & Settings</h2>
+                    </div>
+
+                    {/* Summary — auto-generated but editable */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold tracking-widest uppercase block">Brief Summary <span className="text-[10px] text-muted-foreground font-normal normal-case">(auto-generated, editable)</span></label>
+                        <textarea
+                            required
+                            name="summary"
+                            rows={3}
+                            value={formData.summary}
+                            onChange={handleChange}
+                            className="w-full p-4 bg-transparent border-2 border-border focus:border-foreground focus:outline-none transition-colors resize-y text-base"
+                            placeholder="Click 'Generate SEO' above to auto-fill, or type manually..."
+                        />
                     </div>
 
                     <div className="bg-card p-6 border border-border">
@@ -317,32 +407,30 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                         />
                     </div>
 
-                    {editMode === 'advanced' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold tracking-widest uppercase block">URL Slug</label>
-                                <input
-                                    required
-                                    type="text"
-                                    name="slug"
-                                    value={formData.slug}
-                                    onChange={handleChange}
-                                    className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold tracking-widest uppercase block">Source Link (Optional)</label>
-                                <input
-                                    type="text"
-                                    name="sourceLink"
-                                    value={formData.sourceLink}
-                                    onChange={handleChange}
-                                    placeholder="https://original-source.com"
-                                    className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
-                                />
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold tracking-widest uppercase block">URL Slug</label>
+                            <input
+                                required
+                                type="text"
+                                name="slug"
+                                value={formData.slug}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
+                            />
                         </div>
-                    )}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold tracking-widest uppercase block">Source Link (Optional)</label>
+                            <input
+                                type="text"
+                                name="sourceLink"
+                                value={formData.sourceLink}
+                                onChange={handleChange}
+                                placeholder="https://original-source.com"
+                                className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors"
+                            />
+                        </div>
+                    </div>
 
                     <div className="space-y-2 max-w-xs">
                         <label className="text-sm font-bold tracking-widest uppercase block">Publish Status</label>
@@ -358,45 +446,54 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                     </div>
                 </section>
 
-                {/* Section 3: SEO Magic (Advanced Only) */}
-                {editMode === 'advanced' && (
-                    <section className="space-y-6 pb-20 lg:pb-0 animate-in fade-in slide-in-from-top-4 duration-700">
-                        <div className="flex items-center gap-3 border-b border-border pb-2">
+                {/* Section 3: SEO & Social */}
+                <section className="space-y-6 pb-20 lg:pb-0">
+                    <div className="flex items-center justify-between gap-3 border-b border-border pb-2">
+                        <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded bg-foreground text-background flex items-center justify-center font-bold font-sans">3</div>
                             <h2 className="text-xl font-bold uppercase tracking-widest">Search & Social (SEO)</h2>
                         </div>
+                        <button
+                            type="button"
+                            onClick={handleAutoSEO}
+                            disabled={isOptimizing}
+                            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white text-[10px] font-black uppercase tracking-widest hover:bg-secondary/80 transition-all rounded shadow-lg disabled:opacity-50"
+                        >
+                            <Wand2 className={`w-3.5 h-3.5 ${isOptimizing ? 'animate-spin' : ''}`} />
+                            {isOptimizing ? "Generating..." : "✨ Magic Auto-SEO"}
+                        </button>
+                    </div>
 
-                        <div className="bg-secondary/5 border border-secondary/30 p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <h3 className="font-bold uppercase tracking-widest text-sm text-secondary">Magic SEO Generator</h3>
-                                    <p className="text-xs text-muted-foreground mt-1 max-w-md">Automatically sync metadata with your headline and summary for optimal ranking.</p>
-                                </div>
-                                <button 
-                                    type="button" 
-                                    onClick={handleAutoFillSEO}
-                                    className="flex items-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground text-xs uppercase tracking-widest font-black hover:opacity-90 transition-all shrink-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    Sync SEO
-                                </button>
-                            </div>
-                        </div>
-
-                        <SEOEditor 
-                            data={formData} 
-                            onChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
-                            baseSlug={formData.slug}
-                            type="news"
-                        />
-                    </section>
-                )}
+                    <SEOEditor 
+                        data={formData} 
+                        onChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
+                        baseSlug={formData.slug}
+                        type="news"
+                    />
+                </section>
             </div>
 
             {/* Right side: Live Preview (Sticky) */}
             <div className={`flex-1 lg:w-[45%] lg:max-w-2xl shrink-0 ${activeTab === 'write' ? 'hidden lg:block' : 'block'}`}>
                 <div className="lg:sticky lg:top-8 space-y-4">
                     <ContentHealth />
+                    
+                    {aiTips.length > 0 && (
+                        <div className="bg-secondary/5 border-2 border-secondary/20 p-5 shadow-sm rounded-xl">
+                            <h4 className="text-[10px] font-black tracking-widest uppercase text-secondary mb-4 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4" />
+                                How to Improve This Blog
+                            </h4>
+                            <ul className="space-y-3">
+                                {aiTips.map((tip, idx) => (
+                                    <li key={idx} className="text-sm font-medium text-foreground/80 leading-snug flex items-start gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5 shrink-0" />
+                                        {tip}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     
                     <div className="border border-border bg-background shadow-xl h-[calc(100vh-16rem)] min-h-[500px] flex flex-col">
                         <div className="border-b border-border bg-muted/20 p-3 flex items-center justify-between">

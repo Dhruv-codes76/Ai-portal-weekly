@@ -11,16 +11,29 @@ const morgan = require('morgan');
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy for rate limiters backing onto Render/Nginx
 app.use(morgan('dev')); // HTTP request logger
-app.use(express.json());
 
 // CORS configuration
 const allowedOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-    : ['http://localhost:3000', 'http://localhost:5173'];
+    : [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173'
+    ];
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        // In development, we can be more permissive to unblock the user immediately
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`CORS (Dev Mode) - Allowing origin: ${origin || 'no-origin'}`);
+            return callback(null, true);
+        }
+
+        // Log origin for debugging in production
+        console.log(`Incoming request from origin: ${origin || 'no-origin'}`);
+
+        // Allow requests with no origin
         if (!origin) return callback(null, true);
 
         const isAllowed = allowedOrigins.includes(origin) || allowedOrigins.includes('*');
@@ -28,11 +41,14 @@ app.use(cors({
         if (isAllowed) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            console.warn(`CORS blocked for origin: ${origin}`);
+            callback(null, false);
         }
     },
     credentials: true
 }));
+
+app.use(express.json());
 
 // Import routes
 const adminRoutes = require('./routes/adminRoutes');
@@ -42,6 +58,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const activityLogRoutes = require('./routes/activityLogRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const { optimizeSEO } = require('./controllers/seoController');
 
 
 // Use routes
@@ -52,6 +69,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api', commentRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/logs', activityLogRoutes);
+app.post('/api/seo/optimize', optimizeSEO);
 
 // Initialize Prisma Connection
 const prisma = require('./config/prisma');
