@@ -43,8 +43,8 @@ export default function NewsCard({ news }: { news: NewsItem }) {
     const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/news/${news.slug}` : `/news/${news.slug}`;
 
     return (
-        <article className="group flex flex-col h-full bg-black/95 rounded-2xl border border-border shadow-sm hover:shadow-md overflow-visible transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden">
-            <Link prefetch={true} href={`/news/${news.slug}`} className="flex flex-col h-full rounded-2xl transition-all duration-200 premium-active active:opacity-90 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <article className="group flex flex-col h-full bg-black/95 rounded-b-2xl rounded-t-none border border-border shadow-sm hover:shadow-md overflow-visible transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden">
+            <Link prefetch={true} href={`/news/${news.slug}`} className="flex flex-col h-full rounded-b-2xl rounded-t-none transition-all duration-200 premium-active active:opacity-90 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
 
                 {/* Image Placeholder Container (16:9) */}
                 <div className="relative w-full aspect-[16/9] bg-muted/30 overflow-hidden">

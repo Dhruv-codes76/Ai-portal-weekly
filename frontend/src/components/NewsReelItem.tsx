@@ -49,7 +49,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
 
     return (
         <>
-            <div className="relative w-full h-full bg-black overflow-hidden flex flex-col justify-end rounded-2xl shadow-xl">
+            <div className="relative w-full h-full bg-black overflow-hidden flex flex-col justify-end rounded-b-2xl rounded-t-none shadow-xl">
 
                                 {/* Edge-to-Edge Image Header */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
