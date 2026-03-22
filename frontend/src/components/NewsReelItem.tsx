@@ -49,29 +49,30 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
 
     return (
         <>
-            <div className="relative w-full h-full bg-background overflow-hidden flex flex-col justify-end rounded-3xl shadow-xl">
+            <div className="relative w-full h-full bg-background overflow-hidden flex flex-col justify-end rounded-2xl shadow-xl">
 
                                 {/* Full Screen Background Blur Fallback & Image Container */}
-                <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center p-4">
+                <div className="absolute inset-0 z-0 overflow-hidden flex flex-col justify-start pt-8 px-4 pb-[30vh]">
                     {news.featuredImage ? (
                         <>
-                            {/* Blurred Background Layer */}
+                            {/* Secondary blurred background layer (Dynamic Color Field) */}
                             <img
                                 src={news.featuredImage}
                                 alt=""
-                                className="absolute inset-0 w-full h-full object-cover blur-3xl"
+                                className="absolute inset-0 w-full h-full object-cover blur-[50px] saturate-[1.8]"
                                 aria-hidden="true"
                             />
-                            {/* Dark Overlay for contrast */}
                             <div className="absolute inset-0 bg-black/60 z-0" aria-hidden="true" />
 
-                            {/* Primary Floating Image */}
-                            <img
-                                src={news.featuredImage}
-                                alt=""
-                                className={`relative z-10 w-full h-full object-contain drop-shadow-2xl transition-transform duration-[40s] ease-out ${isActive && !isInteracting ? 'scale-110' : 'scale-100'}`}
-                                loading={isActive ? "eager" : "lazy"}
-                            />
+                            {/* Primary image centered and contained (Top portion) */}
+                            <div className="relative z-10 w-full h-full flex items-center justify-center">
+                                <img
+                                    src={news.featuredImage}
+                                    alt=""
+                                    className={`relative z-10 w-full h-full max-h-[50vh] object-contain drop-shadow-2xl transition-transform duration-[40s] ease-out ${isActive && !isInteracting ? 'scale-110' : 'scale-100'}`}
+                                    loading={isActive ? "eager" : "lazy"}
+                                />
+                            </div>
                         </>
                     ) : (
                         <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
@@ -79,7 +80,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                 </div>
 
                                 {/* Gradient Overlays for Readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10"></div>
+                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none h-[60vh]"></div>
 
                 {/* Top Progress Bar (Reels Style) */}
                 <div className="absolute top-safe pt-2 left-2 right-2 h-1 bg-white/20 rounded-full overflow-hidden z-20">
@@ -90,7 +91,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                 </div>
 
                 {/* Main Content Area */}
-                <div className="absolute bottom-0 left-0 w-full p-6 z-10 flex justify-between items-end gap-6 pointer-events-auto pb-20 md:pb-6">
+                <div className="absolute bottom-0 left-0 w-full p-6 z-10 flex justify-between items-end gap-6 pointer-events-auto pb-24 md:pb-8">
 
                     {/* Left side text content */}
                     <div className="flex-1 flex flex-col justify-end overflow-hidden pb-4">
