@@ -49,31 +49,24 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
 
     return (
         <>
-            <div className="relative w-full h-full bg-background overflow-hidden flex flex-col justify-end">
+            <div className="relative w-full h-full bg-background overflow-hidden flex flex-col justify-end rounded-3xl shadow-xl">
 
                 {/* Full Screen Background Image */}
-                <div className="absolute inset-0 z-0 bg-black flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 z-0 overflow-hidden">
                     {news.featuredImage ? (
-                        <>
-                            {/* Primary image centered and contained */}
-                            <img
-                                src={news.featuredImage}
-                                alt=""
-                                className={`relative z-10 w-full h-full object-cover transition-transform duration-[40s] ease-out ${isActive && !isInteracting ? 'scale-110' : 'scale-100'}`}
-                                loading={isActive ? "eager" : "lazy"}
-                            />
-                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 pointer-events-none"></div>
-                        </>
+                        <img
+                            src={news.featuredImage}
+                            alt=""
+                            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[40s] ease-out ${isActive && !isInteracting ? 'scale-110' : 'scale-100'}`}
+                            loading={isActive ? "eager" : "lazy"}
+                        />
                     ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
                     )}
                 </div>
 
-                {/* Gradient Overlays for Readability (Adapts to Light/Dark mode via tailwind classes) */}
-                {/* Top overlay - transparent to dark */}
-                <div className="absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/50 via-transparent to-transparent pointer-events-none h-40" />
-                {/* Bottom overlay - dark gradient for text readability with backdrop blur to soften the image below the text */}
-                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none h-[70vh] backdrop-blur-[2px] mask-gradient" />
+                {/* Gradient Overlays for Readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent pointer-events-none z-0"></div>
 
                 {/* Top Progress Bar (Reels Style) */}
                 <div className="absolute top-safe pt-2 left-2 right-2 h-1 bg-white/20 rounded-full overflow-hidden z-20">
@@ -84,7 +77,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                 </div>
 
                 {/* Main Content Area */}
-                <div className="relative z-20 w-full px-4 pb-20 md:pb-6 flex justify-between items-end gap-6 pointer-events-auto">
+                <div className="absolute bottom-0 left-0 w-full p-6 z-10 flex justify-between items-end gap-6 pointer-events-auto pb-20 md:pb-6">
 
                     {/* Left side text content */}
                     <div className="flex-1 flex flex-col justify-end overflow-hidden pb-4">
@@ -100,12 +93,12 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                         </div>
 
                         <Link href={`/news/${news.slug}`} className="active:opacity-70 transition-opacity">
-                            <h2 className="text-[26px] sm:text-3xl font-bold font-sans tracking-tight mb-3 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] leading-[1.15]">
+                            <h2 className="text-[26px] sm:text-3xl font-bold font-sans tracking-tight mb-3 text-white leading-[1.15]">
                                 {news.title}
                             </h2>
                         </Link>
 
-                        <p className="text-sm text-white/90 line-clamp-3 leading-[1.6] mb-5 font-medium max-w-[90%] drop-shadow-lg">
+                        <p className="text-sm text-gray-50 line-clamp-3 leading-[1.6] mb-5 font-medium max-w-[90%] drop-shadow-lg">
                             {news.summary}
                         </p>
 
