@@ -13,8 +13,8 @@ app.set('trust proxy', 1); // Trust first proxy for rate limiters backing onto R
 app.use(morgan('dev')); // HTTP request logger
 
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+const rawOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
     : [
         'http://localhost:3000',
         'http://localhost:5173',
@@ -22,26 +22,36 @@ const allowedOrigins = process.env.CORS_ORIGIN
         'http://127.0.0.1:5173'
     ];
 
+const allowedOrigins = new Set();
+rawOrigins.forEach(origin => {
+    let cleanOrigin = origin.trim().replace(/\/$/, ''); // Remove trailing slash
+    allowedOrigins.add(cleanOrigin);
+
+    // If it's a production domain without www., allow the www. version too
+    if (cleanOrigin.startsWith('https://') && !cleanOrigin.startsWith('https://www.')) {
+        allowedOrigins.add(cleanOrigin.replace('https://', 'https://www.'));
+    } 
+    // If it's a production domain WITH www., allow the bare version too
+    else if (cleanOrigin.startsWith('https://www.')) {
+        allowedOrigins.add(cleanOrigin.replace('https://www.', 'https://'));
+    }
+});
+
 app.use(cors({
     origin: (origin, callback) => {
-        // In development, we can be more permissive to unblock the user immediately
         if (process.env.NODE_ENV === 'development') {
-            console.log(`CORS (Dev Mode) - Allowing origin: ${origin || 'no-origin'}`);
             return callback(null, true);
         }
 
-        // Log origin for debugging in production
-        console.log(`Incoming request from origin: ${origin || 'no-origin'}`);
+        if (!origin) return callback(null, true); // Allow requests with no origin (like mobile apps/postman)
 
-        // Allow requests with no origin
-        if (!origin) return callback(null, true);
-
-        const isAllowed = allowedOrigins.includes(origin) || allowedOrigins.includes('*');
+        const requestOrigin = origin.replace(/\/$/, '');
+        const isAllowed = allowedOrigins.has(requestOrigin) || allowedOrigins.has('*');
 
         if (isAllowed) {
             callback(null, true);
         } else {
-            console.warn(`CORS blocked for origin: ${origin}`);
+            console.warn(`CORS blocked for origin: ${origin}. Allowed origins are: ${Array.from(allowedOrigins).join(', ')}`);
             callback(null, false);
         }
     },
