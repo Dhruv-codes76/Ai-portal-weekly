@@ -59,13 +59,13 @@ export default function NewsCard({ news }: { news: NewsItem }) {
     const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/news/${news.slug}` : `/news/${news.slug}`;
 
     return (
-        <article className="group flex flex-col h-full bg-black/95 rounded-b-2xl rounded-t-none border border-border shadow-sm hover:shadow-md overflow-visible transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden">
+        <article className="group flex flex-col h-full bg-gradient-to-br from-white to-gray-50 dark:from-zinc-900 dark:to-black rounded-b-2xl rounded-t-none border border-border shadow-sm hover:shadow-md overflow-visible transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden">
             <Link prefetch={true} href={`/news/${news.slug}`} className="flex flex-col h-full rounded-b-2xl rounded-t-none transition-all duration-200 premium-active active:opacity-90 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
 
                 {/* Image Placeholder Container (16:9) */}
                 <div className="relative w-full aspect-[16/9] bg-muted/30 overflow-hidden">
                     {(news.image_url || news.featuredImage) ? (
-                        <div className="absolute inset-0 z-0 overflow-hidden bg-black/95">
+                        <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-zinc-900 dark:to-black">
                             {/* Edge-to-Edge Image */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -75,7 +75,7 @@ export default function NewsCard({ news }: { news: NewsItem }) {
                                 className="absolute top-0 left-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
                             />
                             {/* Seamless Fade into Card Background */}
-                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/95 via-black/80 to-transparent z-10 pointer-events-none" />
+                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-black/95 dark:via-black/80 dark:to-transparent z-10 pointer-events-none" />
                         </div>
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20 transition-transform duration-700 group-hover:scale-[1.03] bg-gradient-to-br from-muted/50 to-background/50">
@@ -95,7 +95,7 @@ export default function NewsCard({ news }: { news: NewsItem }) {
                     {/* Source Badge */}
                     {news.source && sourceStyles && (
                         <div className="absolute top-4 right-4 z-10 transition-transform duration-300 group-hover:scale-110">
-                            <span className={`${sourceStyles} backdrop-blur-md text-[10px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-full shadow-lg border border-white/10`}>
+                            <span className={`${sourceStyles} backdrop-blur-md text-[10px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-full shadow-lg border border-gray-200 dark:border-white/10`}>
                                 {news.source === 'GEMINI_SEARCH' ? 'GEMINI' : news.source}
                             </span>
                         </div>
@@ -105,25 +105,25 @@ export default function NewsCard({ news }: { news: NewsItem }) {
                 {/* Content Container */}
                 <div className="flex flex-col flex-grow p-6 lg:p-8">
                     <div className="flex justify-between items-center mb-4">
-                        <time className="text-xs tracking-widest text-gray-400 uppercase font-medium">
+                        <time className="text-xs tracking-widest text-gray-500 dark:text-gray-400 uppercase font-medium">
                             {date} • {readingTime}
                         </time>
                     </div>
 
-                    <h3 className="font-sans text-xl lg:text-2xl font-bold text-white leading-snug mb-4 group-hover:text-blue-500 transition-colors line-clamp-2">
+                    <h3 className="font-sans text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-snug mb-4 group-hover:text-blue-500 transition-colors line-clamp-2">
                         {news.title}
                     </h3>
 
-                    <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 mt-auto mb-6">
+                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3 mt-auto mb-6">
                         {news.summary}
                     </p>
 
                     {/* Minimal Action Bar */}
-                    <div className="mt-auto flex justify-between items-center relative z-20 pt-4 border-t border-white/10">
+                    <div className="mt-auto flex justify-between items-center relative z-20 pt-4 border-t border-gray-200 dark:border-white/10">
                         <div className="flex items-center space-x-1 -ml-2">
                             <button
                                 onClick={handleSave}
-                                className={`p-2 rounded-full transition-all duration-200 hover:bg-white/10 ${isSaved ? 'text-blue-500' : 'text-gray-400 hover:text-white'}`}
+                                className={`p-2 rounded-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 ${isSaved ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                                 aria-label="Save article"
                             >
                                 <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
@@ -131,7 +131,7 @@ export default function NewsCard({ news }: { news: NewsItem }) {
 
                             <button
                                 onClick={handleShareClick}
-                                className="p-2 rounded-full text-gray-400 transition-all duration-200 hover:bg-white/10 hover:text-white"
+                                className="p-2 rounded-full text-gray-500 dark:text-gray-400 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white"
                                 aria-label="Share article"
                             >
                                 <Share2 className="w-4 h-4" />

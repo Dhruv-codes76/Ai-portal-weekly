@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Share2, MessageCircle, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { Share2, Heart, MessageCircle,  ChevronDown, ChevronUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import ShareModal from "./ShareModal";
 
@@ -59,15 +59,15 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                             <img
                                 src={news.featuredImage}
                                 alt=""
-                                className={`absolute top-0 left-0 w-full h-[55%] object-cover object-top transition-transform duration-[40s] ease-out ${isActive && !isInteracting ? 'scale-110' : 'scale-100'}`}
+                                className={`absolute top-0 left-0 w-full h-[40%] object-cover object-top transition-transform duration-[40s] ease-out ${isActive && !isInteracting ? 'scale-110' : 'scale-100'}`}
                                 loading={isActive ? "eager" : "lazy"}
                             />
                             {/* The Seamless Fade Overlay */}
                             <div className="absolute inset-x-0 top-[20%] bottom-[45%] bg-gradient-to-t from-black via-black/80 to-transparent z-10 pointer-events-none" />
-                            <div className="absolute inset-x-0 top-[55%] bottom-0 bg-black z-10 pointer-events-none" />
+                            <div className="absolute inset-x-0 top-[40%] bottom-0 bg-black z-10 pointer-events-none" />
                         </>
                     ) : (
-                        <div className="absolute inset-0 w-full h-[55%] bg-gradient-to-br from-gray-900 to-black" />
+                        <div className="absolute inset-0 w-full h-[40%] bg-gradient-to-br from-gray-900 to-black" />
                     )}
                 </div>
 
@@ -82,10 +82,10 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                 </div>
 
                 {/* Main Content Area */}
-                <div className="absolute bottom-0 left-0 w-full h-[45%] p-6 z-20 flex justify-between items-end gap-4 pointer-events-auto pb-24 md:pb-8 bg-black">
+                <div className="absolute bottom-0 left-0 w-full h-[60%] p-6 z-20 flex justify-between items-end gap-4 pointer-events-auto pb-24 md:pb-8 bg-black">
 
                     {/* Left side text content */}
-                    <div className="flex-1 flex flex-col justify-end overflow-hidden pr-4 space-y-4">
+                    <div className="flex-1 flex flex-col justify-end overflow-y-auto custom-scrollbar pr-4 space-y-4">
                         <div className="flex items-center gap-3">
                             {news.trending && (
                                 <span className="bg-red-500 text-white text-[10px] uppercase tracking-widest px-2.5 py-1 rounded shadow-md font-bold">
@@ -98,12 +98,12 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                         </div>
 
                         <Link href={`/news/${news.slug}`} className="active:opacity-70 transition-opacity">
-                            <h2 className="text-[26px] sm:text-3xl font-bold font-sans tracking-tight text-white leading-tight">
+                            <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-white leading-tight">
                                 {news.title}
                             </h2>
                         </Link>
 
-                        <p className="text-sm text-gray-300 line-clamp-3 leading-relaxed font-medium max-w-[95%] drop-shadow-lg">
+                        <p className="text-sm text-gray-300 leading-relaxed font-medium max-w-[95%] drop-shadow-lg">
                             {news.summary}
                         </p>
 
@@ -118,36 +118,40 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
 
                     {/* Right side floating action bar */}
                     <div className="flex flex-col gap-5 items-center justify-end shrink-0 z-30">
-                        {news.sourceLink && (
-                            <a
-                                href={news.sourceLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 text-white hover:bg-white/20 active:scale-90 transition-all shadow-xl"
-                                onClick={handleInteraction}
-                            >
-                                <ExternalLink className="w-5 h-5" />
-                                <span className="text-[9px] font-semibold mt-0.5 tracking-wider">READ</span>
-                            </a>
-                        )}
+                        <button
+                            className="flex flex-col items-center justify-center text-white active:scale-90 transition-transform group"
+                            onClick={() => {
+                                handleInteraction();
+                                // Add like logic here if needed
+                            }}
+                        >
+                            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                <Heart className="w-7 h-7" />
+                            </div>
+                            <span className="text-xs font-semibold mt-1 drop-shadow-md">Like</span>
+                        </button>
 
                         <button
-                            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 text-white hover:bg-white/20 active:scale-90 transition-all shadow-xl"
+                            className="flex flex-col items-center justify-center text-white active:scale-90 transition-transform group"
                             onClick={() => {
                                 setShowComments(true);
                                 handleInteraction();
                             }}
                         >
-                            <MessageCircle className="w-5 h-5 fill-transparent" />
-                            <span className="text-[9px] font-semibold mt-0.5 tracking-wider">CHAT</span>
+                            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                <MessageCircle className="w-7 h-7 fill-white/20" />
+                            </div>
+                            <span className="text-xs font-semibold mt-1 drop-shadow-md">Chat</span>
                         </button>
 
                         <button
-                            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 text-white hover:bg-white/20 active:scale-90 transition-all shadow-xl"
+                            className="flex flex-col items-center justify-center text-white active:scale-90 transition-transform group"
                             onClick={toggleShare}
                         >
-                            <Share2 className="w-5 h-5" />
-                            <span className="text-[9px] font-semibold mt-0.5 tracking-wider">SHARE</span>
+                            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                <Share2 className="w-7 h-7" />
+                            </div>
+                            <span className="text-xs font-semibold mt-1 drop-shadow-md">Share</span>
                         </button>
                     </div>
                 </div>
