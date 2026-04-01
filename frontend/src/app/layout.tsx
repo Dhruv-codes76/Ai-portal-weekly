@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
   },
   metadataBase: new URL("https://www.aiportalweekly.com"),
+  icons: {
+    icon: "/logos/favicon.ico",
+    shortcut: "/logos/favicon-96x96.png",
+    apple: "/logos/apple-touch-icon.png",
+  },
+  manifest: "/logos/site.webmanifest",
 };
 
 export default function RootLayout({
