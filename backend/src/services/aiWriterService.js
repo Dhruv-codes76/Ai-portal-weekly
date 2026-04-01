@@ -203,6 +203,59 @@ class AIWriterService {
             return JSON.parse(text);
         });
     }
+    /**
+     * Uses Gemini to rewrite raw tool text/URL info into a structured JSON format with complete SEO fields.
+     */
+    async rewriteTool(rawTitle, rawText) {
+        return await this.executeWithRetry(async (genAI, activeModel) => {
+            const model = genAI.getGenerativeModel({ model: activeModel });
+
+            const prompt = `
+            You are a senior analyst for "AI Portal Weekly". 
+            Your goal is to parse raw information about an AI Tool and return a structured JSON response.
+            
+            SEO CONTENT RULES (CRITICAL):
+            1. **Keyphrase**: Identify a 2-3 word "focusKeyphrase" (e.g., "AI Video Generator").
+            2. **Description**: Write a concise, 2-3 paragraph objective description of what the tool does. Do NOT hype it. Use straightforward words.
+            3. **Meta lengths**: 
+               - "seoMetaTitle" MUST be between 45 and 60 characters. 
+               - "seoMetaDescription" MUST be between 140 and 155 characters. (NEVER exceed 155)
+            4. **Usage Tip**: Provide one sentence detailing the fastest way to get value ("5-minute win").
+
+            Raw Title: ${rawTitle}
+            Raw Information: ${rawText}
+
+            Respond ONLY with this JSON structure. Any missing fields should be left empty or given a reasonable guess based on the text.
+            {
+                "name": "Exact Name of the Tool",
+                "parentCompany": "Name of the parent company if mentioned/known, else empty string",
+                "focusKeyphrase": "the 2-3 word keyword",
+                "description": "HTML structure with <h2> and <p>. Ensure Keyphrase is present. Objective and factual.",
+                "seoMetaTitle": "Strictly 45-60 chars including Keyphrase",
+                "seoMetaDescription": "Strictly 140-155 chars including Keyphrase",
+                "featuredImageAlt": "Alt text including Focus Keyphrase",
+                "features": ["3 to 5 core features in active voice"],
+                "tutorials": ["Any youtube URLs found in the text for tutorials/demos. Else empty array"],
+                "limitations": "Who this tool is NOT for (1 sentence)",
+                "usageTip": "The 5-minute win (1 sentence)"
+            }
+            `;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            let text = response.text();
+            
+            text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+            const firstBrace = text.indexOf('{');
+            const lastBrace = text.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                text = text.substring(firstBrace, lastBrace + 1);
+            }
+
+            return JSON.parse(text);
+        }, 'gemini-1.5-flash'); // Hard-code fallback to 1.5 flash for tool processing as requested
+    }
 }
 
 module.exports = new AIWriterService();

@@ -9,11 +9,12 @@ const {
     createTool,
     updateTool,
     deactivateTool,
-    restoreTool
+    restoreTool,
+    autoFillTool
 } = require('../controllers/toolController');
 
-
 router.get('/', getTools);
+router.post('/auto-fill', authMiddleware, autoFillTool);
 router.get('/:slug', getToolBySlug);
 
 router.post('/', authMiddleware, upload.fields([

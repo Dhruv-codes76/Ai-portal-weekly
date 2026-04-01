@@ -45,6 +45,13 @@ model Tool {
   categoryId         Int?
   tags               String[]
   affiliateLink      String?
+  parentCompany      String?
+  features           String[]
+  tutorials          String[]    // Used for YouTube tutorial videos
+  limitations        String?
+  usageTip           String?
+  lastTestedAt       DateTime?
+  verifiedBy         String?
   verified           Boolean     @default(false)
   seoMetaTitle       String?
   seoMetaDescription String?

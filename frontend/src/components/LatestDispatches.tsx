@@ -16,7 +16,7 @@ export default async function LatestDispatches() {
     <>
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {latestNews.map((news: any) => (
-        <NewsCard key={news._id} news={news} />
+        <NewsCard key={news.id} news={news} />
       ))}
     </>
   );

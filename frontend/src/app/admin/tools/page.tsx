@@ -53,6 +53,31 @@ export default function AdminToolsPage() {
         }
     };
 
+    const handleAutoFill = async () => {
+        const url = prompt("Enter the website URL of the tool to auto-fill via AI:");
+        if (!url) return;
+
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("adminToken");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools/auto-fill`, {
+                method: "POST",
+                headers: { 
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.message || "Failed to auto-fill");
+            alert("Tool successfully generated and saved as Draft!");
+            fetchTools();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Error occurred during auto-fill.");
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <Link href="/admin/dashboard" className="inline-flex items-center text-muted-foreground hover:text-accent transition-colors mb-8 font-medium">
@@ -68,12 +93,20 @@ export default function AdminToolsPage() {
                     </h1>
                 </div>
 
-                <Link
-                    href="/admin/tools/create"
-                    className="px-5 py-2.5 bg-foreground text-background hover:bg-background hover:text-foreground border border-foreground font-bold tracking-widest uppercase text-sm transition-colors"
-                >
-                    + Add New Tool
-                </Link>
+                <div className="flex gap-4">
+                    <button
+                        onClick={handleAutoFill}
+                        className="px-5 py-2.5 bg-accent text-white hover:bg-accent/90 border border-transparent font-bold tracking-widest uppercase text-sm transition-colors"
+                    >
+                        Auto-Fill URL
+                    </button>
+                    <Link
+                        href="/admin/tools/create"
+                        className="px-5 py-2.5 bg-foreground text-background hover:bg-background hover:text-foreground border border-foreground font-bold tracking-widest uppercase text-sm transition-colors"
+                    >
+                        + Add New Tool
+                    </Link>
+                </div>
             </div>
 
             {error && (

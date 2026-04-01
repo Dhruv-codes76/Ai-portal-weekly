@@ -68,4 +68,15 @@ const restoreTool = async (req, res, next) => {
     }
 };
 
-module.exports = { getTools, getToolBySlug, createTool, updateTool, deactivateTool, restoreTool };
+const autoFillTool = async (req, res, next) => {
+    try {
+        const { url, contextText } = req.body;
+        const toolScraperService = require('../services/toolScraperService');
+        const toolData = await toolScraperService.autoFillTool(url, contextText);
+        res.json({ message: 'Auto-fill completed successfully', data: toolData });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { getTools, getToolBySlug, createTool, updateTool, deactivateTool, restoreTool, autoFillTool };
