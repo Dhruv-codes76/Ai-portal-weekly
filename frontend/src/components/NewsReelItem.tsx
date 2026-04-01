@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Share2, MessageCircle, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { Share2, MessageCircle, ChevronDown, ChevronUp, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import ShareModal from "./ShareModal";
 
@@ -21,6 +21,7 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
     const [showComments, setShowComments] = useState(false);
     const [showShare, setShowShare] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [isLiked, setIsLiked] = useState(false);
 
     // Progress bar for auto-scroll
     useEffect(() => {
@@ -117,37 +118,35 @@ export default function NewsReelItem({ news, isActive, handleInteraction, isInte
                     </div>
 
                     {/* Right side floating action bar */}
-                    <div className="flex flex-col gap-5 items-center justify-end shrink-0 z-30">
-                        {news.sourceLink && (
-                            <a
-                                href={news.sourceLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 text-white hover:bg-white/20 active:scale-90 transition-all shadow-xl"
-                                onClick={handleInteraction}
-                            >
-                                <ExternalLink className="w-5 h-5" />
-                                <span className="text-[9px] font-semibold mt-0.5 tracking-wider">READ</span>
-                            </a>
-                        )}
+                    <div className="flex flex-col gap-6 items-center justify-end shrink-0 z-30 pb-4">
+                        <button
+                            className="flex flex-col items-center justify-center gap-1.5 text-white active:scale-90 transition-all"
+                            onClick={() => {
+                                setIsLiked(!isLiked);
+                                handleInteraction();
+                            }}
+                        >
+                            <ThumbsUp className={`w-8 h-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] ${isLiked ? 'fill-white text-white' : 'text-white'}`} strokeWidth={1.5} />
+                            <span className="text-[11px] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Like</span>
+                        </button>
 
                         <button
-                            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 text-white hover:bg-white/20 active:scale-90 transition-all shadow-xl"
+                            className="flex flex-col items-center justify-center gap-1.5 text-white active:scale-90 transition-all"
                             onClick={() => {
                                 setShowComments(true);
                                 handleInteraction();
                             }}
                         >
-                            <MessageCircle className="w-5 h-5 fill-transparent" />
-                            <span className="text-[9px] font-semibold mt-0.5 tracking-wider">CHAT</span>
+                            <MessageCircle className="w-8 h-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] fill-transparent" strokeWidth={1.5} />
+                            <span className="text-[11px] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Comment</span>
                         </button>
 
                         <button
-                            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex flex-col items-center justify-center border border-white/10 text-white hover:bg-white/20 active:scale-90 transition-all shadow-xl"
+                            className="flex flex-col items-center justify-center gap-1.5 text-white active:scale-90 transition-all"
                             onClick={toggleShare}
                         >
-                            <Share2 className="w-5 h-5" />
-                            <span className="text-[9px] font-semibold mt-0.5 tracking-wider">SHARE</span>
+                            <Share2 className="w-8 h-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] fill-transparent" strokeWidth={1.5} />
+                            <span className="text-[11px] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Share</span>
                         </button>
                     </div>
                 </div>
