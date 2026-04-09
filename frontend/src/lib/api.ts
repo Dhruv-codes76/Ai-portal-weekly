@@ -61,10 +61,11 @@ export async function getNewsBySlug(slug: string) {
     return apiFetch(`/news/${slug}`, { next: { revalidate: 60 } });
 }
 
-export async function getTools(page = 1, limit = 12, category = '') {
+export async function getTools(page = 1, limit = 12, category = '', sort = '') {
     // Revalidate tools catalog every 60 seconds
     const q = category ? `&category=${category}` : '';
-    const raw = await apiFetch(`/tools?page=${page}&limit=${limit}${q}`, { next: { revalidate: 60 } });
+    const s = sort ? `&sort=${sort}` : '';
+    const raw = await apiFetch(`/tools?page=${page}&limit=${limit}${q}${s}`, { next: { revalidate: 60 } });
 
     // Backend returns a raw array for tools — normalize to { data, total } for consistency
     if (Array.isArray(raw)) return { data: raw, total: raw.length, page, totalPages: 1 };

@@ -8,7 +8,7 @@ import ArticleClientControls from "./ArticleClientControls";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug;
     const article = await getNewsBySlug(slug);
-    if (!article) return { title: 'Not Found' };
+    if (!article) notFound();
 
     const title = article.seoMetaTitle || article.title;
     const description = article.seoMetaDescription || article.summary;
@@ -63,13 +63,41 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
         },
     };
 
+    const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://www.aiportalweekly.com',
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'News',
+                item: 'https://www.aiportalweekly.com/news',
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: article.title,
+                item: `https://www.aiportalweekly.com/news/${article.slug}`,
+            },
+        ],
+    };
+
     return (
         <SwipeToBack>
             <div className="max-w-[850px] mx-auto px-4 sm:px-6 py-8 md:py-16 animate-fade-in animate-slide-up pb-24">
                 <script
                     type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                    dangerouslySetInnerHTML={{ 
+                        __html: JSON.stringify([jsonLd, breadcrumbJsonLd]) 
+                    }}
                 />
+
 
                 <div className="mb-10 flex justify-between items-center">
                     <BackLink href="/news" label="Back to News" />

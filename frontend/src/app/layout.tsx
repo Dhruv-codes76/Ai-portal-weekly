@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
   },
   metadataBase: new URL("https://www.aiportalweekly.com"),
+  alternates: {
+    canonical: "https://www.aiportalweekly.com",
+  },
+  category: 'technology',
+  classification: 'AI News and Tools Portal',
+
   icons: {
     icon: "/logos/favicon.ico",
     shortcut: "/logos/favicon-96x96.png",

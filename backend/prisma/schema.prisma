@@ -41,6 +41,11 @@ model Tool {
   description        String
   website            String
   pricing            ToolPricing
+  startingPrice      String?
+  bestUsedFor        String?
+  platforms          String[]
+  viewsCount         Int         @default(0)
+  popularityScore    Float       @default(0.0)
   category           Category?   @relation(fields: [categoryId], references: [id])
   categoryId         Int?
   tags               String[]

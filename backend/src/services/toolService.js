@@ -8,18 +8,48 @@ const AppError = require('../utils/AppError');
  */
 class ToolService {
     async getAllTools(options = {}) {
-        const { isAuthorized = false, categoryId } = options;
+        const { isAuthorized = false, categoryId, sort, page = 1, limit = 100, search, status, includeDeleted = "false" } = options;
         
         const where = {
-            isDeleted: false,
+            ...(includeDeleted === "true" ? {} : { isDeleted: false }),
             ...(isAuthorized ? {} : { status: 'PUBLISHED' }),
-            ...(categoryId ? { categoryId: parseInt(categoryId, 10) } : {})
+            ...(categoryId ? { categoryId: parseInt(categoryId, 10) } : {}),
+            ...(status && isAuthorized ? { status: status.toUpperCase() } : {}),
+            ...(search ? {
+                OR: [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { focusKeyphrase: { contains: search, mode: 'insensitive' } },
+                    { slug: { contains: search, mode: 'insensitive' } }
+                ]
+            } : {})
         };
+
+        const orderBy = sort === 'trending' 
+            ? { popularityScore: 'desc' } 
+            : { createdAt: 'desc' };
 
         return await prisma.tool.findMany({
             where,
+            orderBy,
+            skip: (parseInt(page, 10) - 1) * parseInt(limit, 10),
+            take: parseInt(limit, 10),
             include: { category: { select: { name: true, slug: true } } }
         });
+    }
+
+    async visitTool(slug) {
+        try {
+            return await prisma.tool.update({
+                where: { slug },
+                data: {
+                    viewsCount: { increment: 1 },
+                    popularityScore: { increment: 1.0 }
+                }
+            });
+        } catch (e) {
+            // Ignore if tool not found
+            return null;
+        }
     }
 
     async getToolBySlug(slug, isAuthorized = false) {

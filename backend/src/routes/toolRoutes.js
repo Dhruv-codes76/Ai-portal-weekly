@@ -10,12 +10,14 @@ const {
     updateTool,
     deactivateTool,
     restoreTool,
-    autoFillTool
+    autoFillTool,
+    visitTool
 } = require('../controllers/toolController');
 
 router.get('/', getTools);
 router.post('/auto-fill', authMiddleware, autoFillTool);
 router.get('/:slug', getToolBySlug);
+router.post('/:slug/visit', visitTool);
 
 router.post('/', authMiddleware, upload.fields([
   { name: 'featuredImage', maxCount: 1 },
