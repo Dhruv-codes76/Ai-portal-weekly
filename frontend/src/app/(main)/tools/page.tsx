@@ -2,6 +2,8 @@ import { getTools, getCategories } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import ToolsClient from "./ToolsClient";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: "Explore AI Tools | Curated Editorial",
     description: "Find the exact AI tool you need. No hype, just facts.",

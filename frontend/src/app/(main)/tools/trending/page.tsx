@@ -4,6 +4,8 @@ import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { Flame, ArrowRight, ExternalLink } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: "Trending AI Tools | Top Rated AI Products",
     description: "Discover the hottest and most popular AI tools trending right now.",
