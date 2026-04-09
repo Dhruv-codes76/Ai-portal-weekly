@@ -12,9 +12,24 @@ const getTools = async (req, res, next) => {
         const isAuthorized = !!req.header('Authorization');
         const tools = await toolService.getAllTools({
             isAuthorized,
-            categoryId: req.query.category
+            categoryId: req.query.category,
+            sort: req.query.sort,
+            page: req.query.page || 1,
+            limit: req.query.limit || 100,
+            search: req.query.search,
+            status: req.query.status,
+            includeDeleted: req.query.includeDeleted
         });
         res.json(tools);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const visitTool = async (req, res, next) => {
+    try {
+        await toolService.visitTool(req.params.slug);
+        res.json({ message: 'Visit tracked' });
     } catch (error) {
         next(error);
     }
@@ -68,4 +83,15 @@ const restoreTool = async (req, res, next) => {
     }
 };
 
-module.exports = { getTools, getToolBySlug, createTool, updateTool, deactivateTool, restoreTool };
+const autoFillTool = async (req, res, next) => {
+    try {
+        const { url, contextText } = req.body;
+        const toolScraperService = require('../services/toolScraperService');
+        const toolData = await toolScraperService.autoFillTool(url, contextText);
+        res.json({ message: 'Auto-fill completed successfully', data: toolData });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { getTools, getToolBySlug, visitTool, createTool, updateTool, deactivateTool, restoreTool, autoFillTool };

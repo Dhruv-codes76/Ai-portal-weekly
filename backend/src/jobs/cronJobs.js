@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const newsScraperService = require('../services/newsScraperService');
+const toolScraperService = require('../services/toolScraperService');
 
 /**
  * Initializes all background automated jobs for the backend system.
@@ -12,6 +13,7 @@ const initCronJobs = () => {
             // Rotate starting key on each run to spread load across all 3 accounts
             newsScraperService.rotateApiKey();
             await newsScraperService.runDailyAutomation();
+            await toolScraperService.runDailyAutomation();
         } catch (error) {
             console.error('CRON ERROR: Failed to run daily news automation:', error);
         }

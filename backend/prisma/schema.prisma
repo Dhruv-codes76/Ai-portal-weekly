@@ -41,10 +41,22 @@ model Tool {
   description        String
   website            String
   pricing            ToolPricing
+  startingPrice      String?
+  bestUsedFor        String?
+  platforms          String[]
+  viewsCount         Int         @default(0)
+  popularityScore    Float       @default(0.0)
   category           Category?   @relation(fields: [categoryId], references: [id])
   categoryId         Int?
   tags               String[]
   affiliateLink      String?
+  parentCompany      String?
+  features           String[]
+  tutorials          String[]    // Used for YouTube tutorial videos
+  limitations        String?
+  usageTip           String?
+  lastTestedAt       DateTime?
+  verifiedBy         String?
   verified           Boolean     @default(false)
   seoMetaTitle       String?
   seoMetaDescription String?

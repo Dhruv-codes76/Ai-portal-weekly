@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SEOEditor from "@/components/admin/SEOEditor";
 import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
 import RichTextEditor from "@/components/admin/RichTextEditor";
-import { Sparkles, Wand2 } from "lucide-react";
+import { Sparkles, Wand2, Loader2 } from "lucide-react";
 
-export default function CreateToolPage() {
+export default function EditToolPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
+    const resolvedParams = use(params);
+    const { id } = resolvedParams;
+
     const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(true);
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [error, setError] = useState("");
     const [aiTips, setAiTips] = useState<string[]>([]);
@@ -38,6 +42,57 @@ export default function CreateToolPage() {
         focusKeyphrase: "",
     });
 
+    useEffect(() => {
+        const fetchTool = async () => {
+            try {
+                const token = localStorage.getItem("adminToken");
+                if (!token) return router.push("/admin/login");
+
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Failed to fetch tools");
+
+                const toolsArr = data.data || data || [];
+                const tool = toolsArr.find((item: any) => String(item.id || item._id) === String(id));
+                
+                if (!tool) throw new Error("Tool not found");
+
+                setFormData({
+                    name: tool.name || "",
+                    slug: tool.slug || "",
+                    description: tool.description || "",
+                    website: tool.website || "",
+                    pricing: tool.pricing || "free",
+                    startingPrice: tool.startingPrice || "",
+                    bestUsedFor: tool.bestUsedFor || "",
+                    platforms: Array.isArray(tool.platforms) ? tool.platforms.join(', ') : (tool.platforms || ""),
+                    status: tool.status || "draft",
+                    seoMetaTitle: tool.seoMetaTitle || "",
+                    seoMetaDescription: tool.seoMetaDescription || "",
+                    canonicalUrl: tool.canonicalUrl || "",
+                    ogTitle: tool.ogTitle || "",
+                    ogDescription: tool.ogDescription || "",
+                    ogImage: tool.ogImage || "",
+                    twitterTitle: tool.twitterTitle || "",
+                    twitterDescription: tool.twitterDescription || "",
+                    twitterImage: tool.twitterImage || "",
+                    featuredImage: tool.featuredImage || "",
+                    featuredImageAlt: tool.featuredImageAlt || "",
+                    focusKeyphrase: tool.focusKeyphrase || "",
+                });
+            } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+            } finally {
+                setFetching(false);
+            }
+        };
+
+        fetchTool();
+    }, [id, router]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         
@@ -46,25 +101,21 @@ export default function CreateToolPage() {
             
             // Auto-generate logic
             if (name === "focusKeyphrase" && value) {
-                // 1. Slug from keyphrase
                 newState.slug = value.toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)+/g, '')
                     .substring(0, 60);
 
-                // 2. SEO Title from keyphrase
                 if (!prev.seoMetaTitle || prev.seoMetaTitle === prev.name) {
                     const titlePattern = `${value.charAt(0).toUpperCase() + value.slice(1)} | Best AI Tools | AI Portal`;
                     newState.seoMetaTitle = titlePattern.substring(0, 60);
                 }
 
-                // 3. Meta Description (Start with keyphrase)
                 if (!prev.seoMetaDescription || prev.seoMetaDescription === prev.description) {
                     const descPattern = `Discover ${value}. We've tested and reviewed ${value} to help you understand its real-world value and pricing.`;
                     newState.seoMetaDescription = descPattern.substring(0, 160);
                 }
             } else if (name === "name" && !prev.focusKeyphrase && !newState.slug) {
-                // Fallback to name if no focus keyphrase, keep it under 60 chars
                 newState.slug = value.toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)+/g, '')
@@ -76,7 +127,9 @@ export default function CreateToolPage() {
             
             return newState;
         });
-    };    const handleAutoSEO = async () => {
+    };
+
+    const handleAutoSEO = async () => {
         if (!formData.description || formData.description.length < 50) {
             alert("Please add some description first so the AI can analyze it!");
             return;
@@ -128,8 +181,8 @@ export default function CreateToolPage() {
             const token = localStorage.getItem("adminToken");
             if (!token) return router.push("/admin/login");
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools`, {
-                method: "POST",
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools/${id}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
@@ -141,7 +194,7 @@ export default function CreateToolPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to add tool");
+            if (!res.ok) throw new Error(data.error || "Failed to edit tool");
 
             router.push("/admin/tools");
         } catch (err) {
@@ -149,6 +202,15 @@ export default function CreateToolPage() {
             setLoading(false);
         }
     };
+
+    if (fetching) {
+        return (
+            <div className="max-w-4xl mx-auto min-h-[50vh] flex flex-col items-center justify-center text-muted-foreground gap-4">
+                <Loader2 className="w-8 h-8 animate-spin" />
+                <p className="tracking-widest uppercase font-bold text-sm">Loading Tool Data...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -158,7 +220,7 @@ export default function CreateToolPage() {
                 </Link>
             </div>
 
-            <h1 className="text-4xl font-sans font-bold tracking-tight mb-8">Add New Tool to Catalog</h1>
+            <h1 className="text-4xl font-sans font-bold tracking-tight mb-8">Edit Tool</h1>
 
             {error && (
                 <div className="mb-8 p-4 border border-red-500 text-red-500 text-sm font-medium">
@@ -207,11 +269,11 @@ export default function CreateToolPage() {
                         </div>
                     </div>
 
-                <FeaturedImagePortal 
-                    imageUrl={formData.featuredImage}
-                    imageAlt={formData.featuredImageAlt}
-                    onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
-                />
+                    <FeaturedImagePortal 
+                        imageUrl={formData.featuredImage}
+                        imageAlt={formData.featuredImageAlt}
+                        onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                    />
 
                     <div className="space-y-2">
                         <label className="text-sm font-bold tracking-widest uppercase block">Website URL</label>
@@ -308,7 +370,7 @@ export default function CreateToolPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold tracking-widest uppercase block">URL Slug <span className="text-[10px] text-muted-foreground font-normal normal-case">(auto-generated, editable)</span></label>
+                            <label className="text-sm font-bold tracking-widest uppercase block">URL Slug <span className="text-[10px] text-muted-foreground font-normal normal-case">(editable)</span></label>
                             <input
                                 required
                                 type="text"
@@ -320,33 +382,33 @@ export default function CreateToolPage() {
                         </div>
                     </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Pricing Model</label>
-                        <select
-                            name="pricing"
-                            value={formData.pricing}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm"
-                        >
-                            <option value="free" className="bg-background">Free</option>
-                            <option value="freemium" className="bg-background">Freemium</option>
-                            <option value="paid" className="bg-background">Paid</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold tracking-widest uppercase block">Pricing Model</label>
+                            <select
+                                name="pricing"
+                                value={formData.pricing}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm"
+                            >
+                                <option value="free" className="bg-background">Free</option>
+                                <option value="freemium" className="bg-background">Freemium</option>
+                                <option value="paid" className="bg-background">Paid</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold tracking-widest uppercase block">Status</label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm"
+                            >
+                                <option value="draft" className="bg-background">Draft</option>
+                                <option value="published" className="bg-background">Published</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold tracking-widest uppercase block">Status</label>
-                        <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-transparent border border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm"
-                        >
-                            <option value="draft" className="bg-background">Draft</option>
-                            <option value="published" className="bg-background">Published</option>
-                        </select>
-                    </div>
-                </div>
                 </section>
 
                 <div className="pt-8 border-t border-border">
@@ -380,7 +442,7 @@ export default function CreateToolPage() {
                         disabled={loading}
                         className="w-full md:w-auto px-8 py-4 bg-foreground text-background font-bold tracking-widest uppercase text-sm hover:bg-background hover:text-foreground border border-foreground transition-all disabled:opacity-50"
                     >
-                        {loading ? "Adding..." : "Add Tool"}
+                        {loading ? "Updating..." : "Update Tool"}
                     </button>
                 </div>
             </form>

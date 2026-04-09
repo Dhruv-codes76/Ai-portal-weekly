@@ -1,0 +1,6 @@
+Reason,Source,Validation,Pages
+Page with redirect,Website,Not Started,2
+Duplicate without user-selected canonical,Website,Not Started,1
+Server error (5xx),Website,Started,1
+Discovered – currently not indexed,Google systems,Started,5
+Crawled - currently not indexed,Google systems,Passed,0

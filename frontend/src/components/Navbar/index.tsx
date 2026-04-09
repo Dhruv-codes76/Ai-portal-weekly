@@ -276,26 +276,6 @@ export default function Navbar({ newsItems = [] }: { newsItems?: any[] }) {
                                 <ThemeToggle />
                             </div>
                             <UserMenu />
-
-                            <div className="relative">
-                                <button
-                                    onClick={() => setMenuOpen(!menuOpen)}
-                                    className="p-1.5 text-muted-foreground hover:text-foreground transition-colors hidden md:flex items-center justify-center"
-                                >
-                                    <Menu className="w-5 h-5" />
-                                </button>
-                                {menuOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-card border border-border overflow-hidden animate-fade-in origin-top-right z-50">
-                                        <Link
-                                            href="/admin/login"
-                                            onClick={() => setMenuOpen(false)}
-                                            className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted premium-active transition-colors"
-                                        >
-                                            Admin Dashboard
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
                 </div>
