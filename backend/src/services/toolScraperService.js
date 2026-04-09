@@ -121,8 +121,61 @@ class ToolScraperService {
     }
 
     async runDailyAutomation() {
-        console.log('Automated Tool Discovery Triggered (Placeholder)');
-        // Extend with actual RSS tool directories if needed
+        console.log('--- Automated Tool Discovery Triggered ---');
+        const Parser = require('rss-parser');
+        const parser = new Parser();
+
+        const feeds = [
+            'https://hnrss.org/show?q=AI', // Hacker News Show AI
+            'https://hnrss.org/show?q=LLM', // Hacker News Show LLM
+            // Product Hunt feed can be added here if a direct topic RSS is found
+        ];
+
+        for (const feedUrl of feeds) {
+            try {
+                console.log(`Fetching feed: ${feedUrl}`);
+                const feed = await parser.parseURL(feedUrl);
+                
+                // Process top 5 most recent items from each feed to avoid quota issues
+                const topItems = feed.items.slice(0, 5);
+
+                for (const item of topItems) {
+                    const url = item.link;
+                    const rawTitle = item.title;
+
+                    // Skip if we already have it
+                    if (await this.toolExists(url, rawTitle)) {
+                        console.log(`Skipping existing tool: ${rawTitle}`);
+                        continue;
+                    }
+
+                    console.log(`Found NEW Tool to ingest: ${rawTitle} - ${url}`);
+                    
+                    // Try to fetch HTML context
+                    let pageContent = item.contentSnippet || item.content || "";
+                    try {
+                        const response = await axios.get(url, { timeout: 8000 });
+                        const textOnly = response.data.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '')
+                                                    .replace(/<style[^>]*>([\S\s]*?)<\/style>/gmi, '')
+                                                    .replace(/<[^>]+>/gmi, ' ')
+                                                    .replace(/\s+/g, ' ')
+                                                    .trim();
+                        pageContent += " \n" + textOnly.substring(0, 5000);
+                    } catch (err) {
+                        console.warn(`Could not deeply scrape HTML for ${url}, proceeding with RSS snippet.`);
+                    }
+
+                    await this.processDraftTool(url, rawTitle, pageContent, "CRON_DISCOVERY");
+                    
+                    // Sleep to avoid rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+            } catch (err) {
+                console.error(`Failed to process feed ${feedUrl}:`, err.message);
+            }
+        }
+        
+        console.log('--- Automated Tool Discovery Completed ---');
     }
 }
 

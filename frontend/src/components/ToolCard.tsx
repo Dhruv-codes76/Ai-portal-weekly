@@ -18,29 +18,41 @@ interface ToolItem {
 
 export default function ToolCard({ tool }: { tool: ToolItem }) {
     return (
-        <article className="group flex flex-col h-full bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg premium-hover hover:bg-white/10 hover:border-white/20 premium-active active:opacity-90">
-            <Link prefetch={true} href={`/tools/${tool.slug}`} className="flex flex-col h-full">
-                 {/* Image Placeholder Container (2:1 approx) with Zoom on Hover */}
-                 <div className="relative w-full pt-[40%] bg-muted/30 flex items-center justify-center overflow-hidden border-b border-border/50">
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30 bg-muted/20 transition-transform duration-700 group-hover:scale-[1.03]">
+        <article className="group flex flex-col h-full bg-[#0d0d0d] rounded-2xl border border-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:bg-[#151515] hover:border-white/10 relative">
+            {/* Subtle top glow line */}
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            
+            <Link prefetch={true} href={`/tools/${tool.slug}`} className="flex flex-col h-full z-10">
+                 {/* Image Placeholder (sleek dark gradient) */}
+                 <div className="relative w-full pt-[45%] bg-gradient-to-b from-white/5 to-transparent flex items-center justify-center overflow-hidden border-b border-white/5">
+                    <div className="absolute inset-0 flex items-center justify-center text-white/20 transition-transform duration-700 group-hover:scale-105 group-hover:text-white/40">
                         <Wrench className="w-8 h-8" />
                     </div>
+                    {/* Category Label overlaid */}
+                    {tool.category && (
+                        <div className="absolute top-4 left-4">
+                            <span className="px-2.5 py-1 rounded-md bg-black/40 backdrop-blur-md border border-white/10 text-[10px] uppercase font-bold tracking-wider text-white/80">
+                                {tool.category.name}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex flex-col flex-grow p-6 lg:p-8">
-                    <div className="flex justify-between items-start mb-4 gap-4">
-                        <h3 className="font-sans text-xl font-bold leading-tight group-hover:text-foreground/80 transition-colors line-clamp-2">
+                <div className="flex flex-col flex-grow p-6">
+                    <div className="mb-3">
+                        <h3 className="font-sans text-lg font-semibold tracking-tight text-white/90 group-hover:text-white transition-colors line-clamp-1">
                             {tool.name}
                         </h3>
                     </div>
 
-                    <p className="text-sm text-muted-foreground flex-grow line-clamp-3 leading-relaxed font-medium mb-6">
+                    <p className="text-sm text-white/50 flex-grow line-clamp-3 leading-relaxed font-light mb-6">
                         {tool.description}
                     </p>
 
-                    <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center text-xs tracking-wide">
-                        <span className="font-semibold text-muted-foreground uppercase">Pricing</span>
-                        <span className="capitalize font-medium px-2 py-1 rounded-md bg-muted/50 text-foreground/80">{tool.pricing || "Freemium"}</span>
+                    <div className="mt-auto flex justify-between items-center text-xs tracking-wide">
+                        <span className="font-medium px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-white/60 group-hover:text-white/80 group-hover:border-white/10 transition-all capitalize">
+                            {tool.pricing || "Freemium"}
+                        </span>
                     </div>
                 </div>
             </Link>

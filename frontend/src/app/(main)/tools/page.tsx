@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import ToolCard from "@/components/ToolCard";
-import { getTools } from "@/lib/api";
+import { getTools, getCategories } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
-import EmptyState from "@/components/EmptyState";
+import ToolsClient from "./ToolsClient";
 
 export const metadata = {
     title: "Explore AI Tools | Curated Editorial",
@@ -10,7 +8,12 @@ export const metadata = {
 };
 
 export default async function ToolsPage() {
-    const tools = await getTools();
+    const [toolsData, categories] = await Promise.all([
+        getTools(1, 100), // Fetch a larger set for client-side filtering MVP
+        getCategories()
+    ]);
+
+    const initialTools = toolsData?.data || [];
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -19,15 +22,7 @@ export default async function ToolsPage() {
                 subtitle="Carefully vetted. Highly actionable." 
             />
 
-            {tools && tools.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {tools.map((tool: any) => (
-                        <ToolCard key={tool._id} tool={tool} />
-                    ))}
-                </div>
-            ) : (
-                <EmptyState message="No tools cataloged yet." />
-            )}
+            <ToolsClient initialTools={initialTools} categories={categories || []} />
         </div>
     );
 }

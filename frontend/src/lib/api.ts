@@ -3,7 +3,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 // Wait helper
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Shared fetch with a 5-second timeout and retry logic
+// Shared fetch with a 10-second timeout and retry logic
 async function apiFetch(path: string, options: RequestInit = {}, retries = 3, backoff = 500) {
     let lastError = null;
 
@@ -11,7 +11,7 @@ async function apiFetch(path: string, options: RequestInit = {}, retries = 3, ba
         try {
             const res = await fetch(`${API_BASE}${path}`, {
                 ...options,
-                signal: AbortSignal.timeout(5000), // fail after 5s
+                signal: AbortSignal.timeout(10000), // fail after 10s
             });
 
             if (!res.ok) {
@@ -41,12 +41,9 @@ async function apiFetch(path: string, options: RequestInit = {}, retries = 3, ba
     }
 
     console.error(`Fetch definitively failed for ${path} after ${retries} retries:`, lastError ? (lastError as Error).message : lastError);
-    // When backend is totally offline (e.g., during Vercel build), return null so we don't crash Next.js SSG
-    if (typeof window === 'undefined') {
-       return null;
-    }
-
-    // Throw error so error.tsx can catch it on the client
+    
+    // Throw error so Next.js handles it. If it's a server component, this prevents caching the failure.
+    // If it's a client component, error.tsx will catch it.
     throw lastError || new Error(`Failed to fetch data from ${path}`);
 }
 
