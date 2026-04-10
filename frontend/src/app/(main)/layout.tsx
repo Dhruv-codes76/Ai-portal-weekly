@@ -9,8 +9,9 @@ export default async function MainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch news data to pass to the client-side Navbar for in-memory search
-  const { data: newsItems } = await getNews(1, 100);
+  // Fetch news data safely for the search bar (ignore errors during build)
+  const newsResponse = await getNews(1, 100);
+  const newsItems = newsResponse?.data || [];
 
   // Removed global max-width and horizontal padding to allow full-width mobile reels
   // Components that need constraints (like Home/Desktop News) must now apply them internally.
