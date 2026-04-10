@@ -36,7 +36,6 @@ export default function Home() {
           <div className="max-w-4xl">
             <h1 className="font-sans font-bold text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] mb-6 text-foreground">
               AI Insight for India&apos;s Next-Gen Tech. <br />
-              <span className="text-muted-foreground/80 font-medium italic">Honest. Blunt. For Tier-3 Freshers.</span>
             </h1>
             <p className="max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
               We cut through the noise for Indian CSE grads. No fluffy marketing, no useless hype—just real AI intelligence and curated tools to help you land that first role or build your own income.
