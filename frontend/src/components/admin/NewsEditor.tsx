@@ -14,6 +14,8 @@ export interface NewsFormData {
     content: string;
     sourceLink: string;
     status: string;
+    region: string;
+    contentType: string;
     seoMetaTitle: string;
     seoMetaDescription: string;
     canonicalUrl: string;
@@ -42,7 +44,8 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [aiTips, setAiTips] = useState<string[]>([]);
-    const [aiHealthMetrics, setAiHealthMetrics] = useState<Record<string, unknown> | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [aiHealthMetrics, setAiHealthMetrics] = useState<any | null>(null);
     const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
 
     useEffect(() => {
@@ -443,6 +446,33 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                             <option value="draft" className="bg-background text-yellow-500">Draft (Private)</option>
                             <option value="published" className="bg-background text-green-500">Published (Public)</option>
                         </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold tracking-widest uppercase block">Target Region</label>
+                            <select
+                                name="region"
+                                value={formData.region || "GLOBAL"}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-transparent border-2 border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm font-black"
+                            >
+                                <option value="GLOBAL" className="bg-background">Global (All Users)</option>
+                                <option value="INDIA" className="bg-background">India Only (Tech Hub)</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold tracking-widest uppercase block">Content Type</label>
+                            <select
+                                name="contentType"
+                                value={formData.contentType || "NEWS"}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-transparent border-2 border-border focus:border-foreground focus:outline-none transition-colors uppercase tracking-widest text-sm font-black"
+                            >
+                                <option value="NEWS" className="bg-background">Standard News</option>
+                                <option value="BLOG" className="bg-background">Editorial Blog</option>
+                            </select>
+                        </div>
                     </div>
                 </section>
 

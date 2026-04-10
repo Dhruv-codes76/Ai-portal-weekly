@@ -113,38 +113,34 @@ class AIWriterService {
             const model = genAI.getGenerativeModel({ model: activeModel });
 
             const prompt = `
-            You are a senior SEO journalist for "AI Portal Weekly". 
-            Your goal is to write a post that passes a 100/100 SEO Audit.
+            You are the Chief Editor for "AI Portal Weekly". 
+            Your audience: Final-year CSE graduates from Tier-3 colleges in India (e.g., Kanpur, Indore) who are building careers through side-hustles and self-learning.
             
-            SEO CONTENT RULES (CRITICAL):
-            1. **Keyphrase**: Identify a 2-3 word "focusKeyphrase" (e.g., "OpenAI Sora Shutdown").
-            2. **Placement**: You MUST include the exact focusKeyphrase in:
-               - The main Title
-               - The first 50 words of the Introduction
-               - At least one <h2> heading
-               - The final Conclusion paragraph
-            3. **Meta lengths**: 
-               - "seoMetaTitle" MUST be between 45 and 60 characters. 
-               - "seoMetaDescription" MUST be between 140 and 155 characters. (NEVER exceed 155)
-            4. **Readability**: 
-               - Use **Active Voice** only. (e.g., "OpenAI released" NOT "was released by").
-               - Use at least 5 **Transition Words** (e.g., Furthermore, Consequently, However, Additionally, Similarly).
-            5. **Length**: Total word count MUST be at least 300 words.
-            6. **Tone**: Objective, factual, and strictly no-hype.
+            CONTENT RULES (STRICT):
+            1. **No AI Fluff**: NEVER use words like "Furthermore," "Moreover," "Additionally," "In conclusion," or "In today's rapidly evolving landscape."
+            2. **Direct Tone**: Write with a blunt, "down-to-reality" point of view. Tell the truth, even if it's negative.
+            3. **Clarity & Depth**: Every article MUST be at least 250 words long. Avoid being vague.
+            4. **Educational Analogies**: Explain complex tech concepts using analogies relevant to a student (e.g., tokens like canteen coins, GPUs like a hostel study group).
+            5. **Indian Utility**: Every brief must answer: "How does this help an Indian student with zero placement?" or "Is this tool free in India without a credit card?"
+            6. **Meta lengths**: 
+               - "seoMetaTitle": 45-60 chars (Include "India" if possible). 
+               - "seoMetaDescription": 140-155 chars.
 
             Raw Title: ${rawTitle}
             Raw Text: ${rawText}
 
             Respond ONLY with this JSON structure:
             {
-                "title": "Post Title (Must include Focus Keyphrase)",
-                "summary": "150-character summary",
-                "focusKeyphrase": "the 2-3 word keyword",
-                "content": "HTML structure with <h2> and <p>. Ensure Keyphrase is in Intro, H2, and Conclusion. Use transitions.",
-                "seoMetaTitle": "Strictly 45-60 chars including Keyphrase",
-                "seoMetaDescription": "Strictly 140-155 chars including Keyphrase",
-                "featuredImageAlt": "Alt text including Focus Keyphrase",
-                "quickTake": "One-sentence impact analysis",
+                "title": "Blunt, Catchy Title",
+                "summary": "150-char punchy summary",
+                "focusKeyphrase": "2-3 word keyword",
+                "content": "HTML structure with <h2> and <p>. Minimum 250 words. Focus on depth and clarity. Use analogies. Mention INR/Rupee pricing if relevant.",
+                "seoMetaTitle": "SEO title",
+                "seoMetaDescription": "SEO meta description",
+                "featuredImageAlt": "Alt text",
+                "realityClaim": "What the marketing hype says",
+                "realityTruth": "The blunt, honest reality we found (1-2 sentences)",
+                "quickTake": "The 5-second winner take-away",
                 "hypeLevel": <1-5>
             }
             `;

@@ -47,15 +47,17 @@
   }
 
   /* View Transitions API styles */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation: none;
     mix-blend-mode: normal;
   }
-  ::view-transition-old(root) { z-index: 1; }
-  ::view-transition-new(root) { z-index: 2; }
-  .dark::view-transition-old(root) { z-index: 2; }
-  .dark::view-transition-new(root) { z-index: 1; }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-sans font-semibold tracking-tight text-foreground;

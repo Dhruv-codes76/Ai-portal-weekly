@@ -9,12 +9,14 @@ const AppError = require('../utils/AppError');
  */
 class NewsService {
     async getAllNews(options = {}) {
-        const { page = 1, limit = 12, isAuthorized = false } = options;
+        const { page = 1, limit = 12, isAuthorized = false, region, contentType } = options;
         const skip = (page - 1) * limit;
 
         const where = {
             isDeleted: false,
-            ...(isAuthorized ? {} : { status: 'PUBLISHED' })
+            ...(isAuthorized ? {} : { status: 'PUBLISHED' }),
+            ...(region ? { region } : {}),
+            ...(contentType ? { contentType } : {})
         };
 
         const [news, total] = await Promise.all([

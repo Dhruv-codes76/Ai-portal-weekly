@@ -20,6 +20,8 @@ const getNews = async (req, res, next) => {
         const { news, pagination } = await newsService.getAllNews({
             page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 12,
+            region: req.query.region,
+            contentType: req.query.contentType,
             isAuthorized
         });
 

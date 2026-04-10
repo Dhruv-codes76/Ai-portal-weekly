@@ -96,6 +96,12 @@ class NewsScraperService {
                     seoMetaTitle: rewritten.seoMetaTitle || rewritten.title,
                     seoMetaDescription: rewritten.seoMetaDescription || rewritten.summary,
                     canonicalUrl: `/news/${slug}`,
+                    realityClaim: rewritten.realityClaim || '',
+                    realityTruth: rewritten.realityTruth || '',
+                    quickTake: rewritten.quickTake || '',
+                    hypeLevel: parseInt(rewritten.hypeLevel) || 3,
+                    region: 'GLOBAL',
+                    contentType: 'NEWS',
                     isDeleted: false
                 }
             });

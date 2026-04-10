@@ -19,6 +19,8 @@ export default function CreateNewsPage() {
         content: "",
         sourceLink: "",
         status: "draft",
+        region: "GLOBAL",
+        contentType: "NEWS",
         seoMetaTitle: "",
         seoMetaDescription: "",
         canonicalUrl: "",

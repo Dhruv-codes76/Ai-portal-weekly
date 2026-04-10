@@ -7,23 +7,23 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | AI Intelligence Portal",
-    default: "AI Intelligence Portal | Daily News & Tools",
+    template: "%s | AI Portal Weekly",
+    default: "AI Portal Weekly | Honest AI Tools & Intelligence for Students",
   },
-  description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
-  keywords: ["AI news", "artificial intelligence", "machine learning", "tech news", "AI tools", "ChatGPT"],
+  description: "The honest truth about AI for Indian freshers. We cut through the hype to help you build your career and income.",
+  keywords: ["AI for Indian students", "AI tools for CSE freshers", "Tier-3 college AI prep", "Free AI tools for students India", "AI news India", "coding tools for beginners", "AI career guidance India"],
   openGraph: {
-    title: "AI Intelligence Portal",
-    description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
+    title: "AI Portal Weekly",
+    description: "Honest AI intelligence and curated tools for India's next-gen tech workforce.",
     url: "https://www.aiportalweekly.com",
-    siteName: "AI Intelligence Portal",
-    locale: "en_US",
+    siteName: "AI Portal Weekly",
+    locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Intelligence Portal",
-    description: "Your daily dose of unbiased AI News and the best AI Tools available on the market.",
+    title: "AI Portal Weekly",
+    description: "Honest AI intelligence for Indian freshers.",
   },
   metadataBase: new URL("https://www.aiportalweekly.com"),
   alternates: {

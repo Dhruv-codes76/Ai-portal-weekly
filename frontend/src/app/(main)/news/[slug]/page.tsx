@@ -4,6 +4,7 @@ import { getNewsBySlug } from "@/lib/api";
 import BackLink from "@/components/BackLink";
 import SwipeToBack from "@/components/SwipeToBack";
 import ArticleClientControls from "./ArticleClientControls";
+import RealitySidebar from "@/components/RealitySidebar";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug;
@@ -142,6 +143,13 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
                         className="prose prose-lg dark:prose-invert max-w-none mb-12 font-sans text-foreground/90 leading-[1.8]"
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
+
+                    {article.realityClaim && article.realityTruth && (
+                        <RealitySidebar 
+                            claim={article.realityClaim} 
+                            truth={article.realityTruth} 
+                        />
+                    )}
 
                     {article.sourceLink && (
                         <footer className="pt-8 mt-12 border-t border-border flex justify-between items-center">
