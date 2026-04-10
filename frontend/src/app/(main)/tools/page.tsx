@@ -5,8 +5,8 @@ import ToolsClient from "./ToolsClient";
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: "Explore AI Tools | Curated Editorial",
-    description: "Find the exact AI tool you need. No hype, just facts.",
+    title: "Best AI Tools for Indian CSE Students & Freshers",
+    description: "Curated, vetted AI tools to help Indian freshers land jobs and build side hustles. Honest reviews, student-friendly pricing.",
 };
 
 export default async function ToolsPage() {

@@ -105,10 +105,29 @@ model News {
   featuredImage      String?
   featuredImageAlt   String?
   focusKeyphrase     String?
+  quickTake          String?   // Added for SEO Foundation
+  realityClaim       String?   // For the "Editorial Muscle" widget
+  realityTruth       String?   // For the "Editorial Muscle" widget
+  hypeLevel          Int       @default(1)
+  
+  // Pivot Fields
+  contentType        ArticleType @default(NEWS)
+  region             TargetRegion @default(GLOBAL)
+
   status             DocStatus @default(DRAFT)
   isDeleted          Boolean   @default(false)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+}
+
+enum TargetRegion {
+  GLOBAL
+  INDIA
+}
+
+enum ArticleType {
+  NEWS
+  BLOG
 }
 
 enum DocStatus {

@@ -42,14 +42,22 @@ async function apiFetch(path: string, options: RequestInit = {}, retries = 3, ba
 
     console.error(`Fetch definitively failed for ${path} after ${retries} retries:`, lastError ? (lastError as Error).message : lastError);
     
-    // Throw error so Next.js handles it. If it's a server component, this prevents caching the failure.
-    // If it's a client component, error.tsx will catch it.
-    throw lastError || new Error(`Failed to fetch data from ${path}`);
+    // SEO Hardening: Do NOT throw errors during build time.
+    // Instead, return null so the caller can return fallback data.
+    return null;
 }
 
-export async function getNews(page = 1, limit = 12) {
+export async function getNews(page = 1, limit = 12, region?: string, contentType?: string) {
+    // Build query params
+    const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+    });
+    if (region) params.append('region', region);
+    if (contentType) params.append('contentType', contentType);
+
     // Revalidate data every 60 seconds to balance freshness with performance
-    const data = await apiFetch(`/news?page=${page}&limit=${limit}`, { next: { revalidate: 60 } });
+    const data = await apiFetch(`/news?${params.toString()}`, { next: { revalidate: 60 } });
     return data ?? { data: [], total: 0, page: 1, totalPages: 1 };
 }
 

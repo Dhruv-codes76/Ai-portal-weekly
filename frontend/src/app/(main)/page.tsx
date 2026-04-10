@@ -9,19 +9,37 @@ import { Suspense } from "react";
 export const dynamic = 'force-dynamic';
 
 export default function Home() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "AI Insight India",
+    "alternateName": "AI Portal Weekly",
+    "url": "https://www.aiportalweekly.com",
+    "description": "Honest AI intelligence and tools for Indian CSE students and tier-3 college freshers.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.aiportalweekly.com/news?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center selection:bg-foreground selection:text-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* Editorial Hero Section */}
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 lg:pt-40 lg:pb-40">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
           <div className="max-w-4xl">
             <h1 className="font-sans font-bold text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] mb-6 text-foreground">
-              Unbiased AI Insights. <br />
-              <span className="text-muted-foreground/80 font-medium">Absolute clarity.</span>
+              AI Insight for India&apos;s Next-Gen Tech. <br />
+              <span className="text-muted-foreground/80 font-medium italic">Honest. Blunt. For Tier-3 Freshers.</span>
             </h1>
             <p className="max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
-              Filter the robust signal from the incessant noise. We bring you real, beginner-friendly AI intelligence and meticulously categorized tooling to supercharge your workflow.
+              We cut through the noise for Indian CSE grads. No fluffy marketing, no useless hype—just real AI intelligence and curated tools to help you land that first role or build your own income.
             </p>
           </div>
         </div>
