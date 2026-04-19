@@ -86,7 +86,7 @@ class AIWriterService {
                 console.error(`Gemini Error (${activeModel}):`, error.message);
             }
             
-            const isRetriable = error.status === 400 || error.status === 404 || error.status === 429 || error.message?.includes('quota') || error.message?.includes('not found') || error.message?.includes('API_KEY_INVALID');
+            const isRetriable = error.status === 400 || error.status === 404 || error.status === 429 || error.message?.includes('quota') || error.message?.includes('not found') || error.message?.includes('API_KEY_INVALID') || error instanceof SyntaxError || error.message?.includes('JSON');
             
             if (isRetriable && retryCount < maxRetries) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -110,7 +110,10 @@ class AIWriterService {
      */
     async rewriteNews(rawTitle, rawText) {
         return await this.executeWithRetry(async (genAI, activeModel) => {
-            const model = genAI.getGenerativeModel({ model: activeModel });
+            const model = genAI.getGenerativeModel({
+                model: activeModel,
+                generationConfig: { responseMimeType: "application/json" }
+            });
 
             const prompt = `
             You are the Chief Editor for "AI Portal Weekly". 
@@ -204,7 +207,10 @@ class AIWriterService {
      */
     async rewriteTool(rawTitle, rawText) {
         return await this.executeWithRetry(async (genAI, activeModel) => {
-            const model = genAI.getGenerativeModel({ model: activeModel });
+            const model = genAI.getGenerativeModel({ 
+                model: activeModel,
+                generationConfig: { responseMimeType: "application/json" }
+            });
 
             const prompt = `
             You are a senior analyst for "AI Portal Weekly". 
