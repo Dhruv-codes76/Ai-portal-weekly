@@ -10,20 +10,8 @@ class AIWriterService {
         if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3.trim());
 
         // 2. Fallback to comma-separated list if no numbered keys found
-        if (keys.length === 0) {
-            const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
-            if (rawKeys) {
-                const splitKeys = rawKeys.split(',').map(k => k.trim()).filter(k => k !== '');
-                keys.push(...splitKeys);
-            }
-        }
-
-        // Remove any potential duplicates and save
-        this.apiKeys = [
-            process.env.GEMINI_API_KEY_1,
-            process.env.GEMINI_API_KEY_2,
-            process.env.GEMINI_API_KEY_3
-        ].filter(Boolean).map(key => key.trim());
+        // Use the collected and deduped keys
+        this.apiKeys = [...new Set(keys)];
 
         this.currentIndex = 0;
         this.currentModel = 'gemini-2.5-flash'; // High-End Default for Scraping
@@ -32,6 +20,32 @@ class AIWriterService {
             console.warn("WARNING: No Gemini API keys found (tried GEMINI_API_KEY_1-3). AI Writer will fail.");
         } else {
             console.log(`AI Writer initialized with ${this.apiKeys.length} API keys. Scraper Default: ${this.currentModel}`);
+        }
+    }
+
+    /**
+     * Helper to safely extract and parse JSON from a string that might contain other text.
+     */
+    safeJSONParse(text, type = 'object') {
+        try {
+            // 1. Clean Markdown code blocks
+            text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+            // 2. Identify likely JSON boundaries
+            const startChar = type === 'array' ? '[' : '{';
+            const endChar = type === 'array' ? ']' : '}';
+
+            const firstIndex = text.indexOf(startChar);
+            const lastIndex = text.lastIndexOf(endChar);
+
+            if (firstIndex !== -1 && lastIndex !== -1 && lastIndex > firstIndex) {
+                text = text.substring(firstIndex, lastIndex + 1);
+            }
+
+            return JSON.parse(text);
+        } catch (error) {
+            console.error(`AI Writer Parsing Error: Failed to parse ${type}. Text preview: "${text.substring(0, 100)}..."`);
+            throw error;
         }
     }
 
@@ -150,17 +164,7 @@ class AIWriterService {
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            let text = response.text();
-            
-            text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-            const firstBrace = text.indexOf('{');
-            const lastBrace = text.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1) {
-                text = text.substring(firstBrace, lastBrace + 1);
-            }
-
-            return JSON.parse(text);
+            return this.safeJSONParse(response.text(), 'object');
         });
     }
 
@@ -189,17 +193,7 @@ class AIWriterService {
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            let text = response.text();
-            
-            text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-            const firstBracket = text.indexOf('[');
-            const lastBracket = text.lastIndexOf(']');
-            if (firstBracket !== -1 && lastBracket !== -1) {
-                text = text.substring(firstBracket, lastBracket + 1);
-            }
-
-            return JSON.parse(text);
+            return this.safeJSONParse(response.text(), 'array');
         });
     }
     /**
@@ -245,17 +239,7 @@ class AIWriterService {
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            let text = response.text();
-            
-            text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-            const firstBrace = text.indexOf('{');
-            const lastBrace = text.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1) {
-                text = text.substring(firstBrace, lastBrace + 1);
-            }
-
-            return JSON.parse(text);
+            return this.safeJSONParse(response.text(), 'object');
         }, 'gemini-1.5-flash'); // Hard-code fallback to 1.5 flash for tool processing as requested
     }
 }

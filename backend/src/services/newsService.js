@@ -22,6 +22,27 @@ class NewsService {
         const [news, total] = await Promise.all([
             prisma.news.findMany({
                 where,
+                select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    summary: true,
+                    featuredImage: true,
+                    featuredImageAlt: true,
+                    status: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    region: true,
+                    contentType: true,
+                    source: true,
+                    sourceLink: true,
+                    tags: true,
+                    hypeLevel: true,
+                    quickTake: true,
+                    realityClaim: true,
+                    realityTruth: true,
+                    focusKeyphrase: true
+                },
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit

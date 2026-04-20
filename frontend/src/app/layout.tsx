@@ -48,6 +48,41 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans flex flex-col min-h-[100dvh] bg-background text-foreground antialiased relative`}>
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "AI Portal Weekly",
+              "url": "https://www.aiportalweekly.com",
+              "logo": "https://www.aiportalweekly.com/logos/logo-icon-dark.png",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "email": "hello@aiportalweekly.com",
+                "contactType": "customer service"
+              }
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "AI Portal Weekly",
+              "url": "https://www.aiportalweekly.com",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.aiportalweekly.com/news?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }),
+          }}
+        />
+        
         <AppLevelThemeController>
           {children}
         </AppLevelThemeController>
