@@ -58,9 +58,15 @@ export default function Logo({ size = "md", variant = "icon", animated = true, c
         `}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-                src={imgSrc}
+                src={variant === "full" ? "/logos/logo-full-light.png" : "/logos/logo-icon-light.png"}
                 alt={altText}
-                className={`${sizeClasses[size]} object-contain bg-transparent transition-colors duration-300 ease-in-out`}
+                className={`${sizeClasses[size]} object-contain bg-transparent transition-colors duration-300 ease-in-out block dark:hidden`}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={variant === "full" ? "/logos/logo-full-dark.png" : "/logos/logo-icon-dark.png"}
+                alt={altText}
+                className={`${sizeClasses[size]} object-contain bg-transparent transition-colors duration-300 ease-in-out hidden dark:block`}
             />
         </div>
     );
