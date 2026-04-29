@@ -26,14 +26,13 @@
   }
 
   .dark {
-    /* Premium dark blue-black gradient feel */
-    --background: #030712;
-    --foreground: #F5F5F7; /* Apple-like off-white */
-    --card: rgba(255, 255, 255, 0.03);
+    --background: #000000;
+    --foreground: #F5F5F7;
+    --card: #111111;
     --card-foreground: #F5F5F7;
-    --muted: rgba(255, 255, 255, 0.05);
+    --muted: #1A1A1A;
     --muted-foreground: #A1A1AA;
-    --border: rgba(255, 255, 255, 0.1);
+    --border: #2A2A2A;
   }
 }
 
@@ -44,6 +43,20 @@
     background-color: var(--background);
     min-height: 100vh;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11"; /* Inter specific improvements */
+  }
+
+  .dark body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background: radial-gradient(circle at 50% -100%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: -1;
+    mask-image: linear-gradient(to bottom, black, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent);
   }
 
   /* View Transitions API styles */
@@ -107,8 +120,8 @@
 
   /* Interaction Utils */
   .premium-hover {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, background, backdrop-filter;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -117,7 +130,10 @@
     }
 
     .dark .premium-hover:hover {
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
     }
   }
 
