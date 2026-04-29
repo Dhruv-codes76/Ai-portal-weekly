@@ -6,6 +6,7 @@ import SwipeToBack from "@/components/SwipeToBack";
 import ArticleClientControls from "./ArticleClientControls";
 import RealitySidebar from "@/components/RealitySidebar";
 import SEOStructuredData from "@/components/SEOStructuredData";
+import RelatedNews from "@/components/RelatedNews";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug;
@@ -164,6 +165,8 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
                         </footer>
                     )}
                 </article>
+
+                <RelatedNews currentSlug={article.slug} />
 
                 <div className="mt-20">
                     <CommentSection articleId={article.slug} />

@@ -66,6 +66,16 @@ export async function getNewsBySlug(slug: string) {
     return apiFetch(`/news/${slug}`, { next: { revalidate: 60 } });
 }
 
+export async function getRelatedNews(currentSlug: string, limit: number = 3) {
+    // Fetch one extra in case the current slug is in the latest results
+    const data = await getNews(1, limit + 1);
+    if (!data || !data.data) return [];
+    
+    // Filter out the current article and slice to the exact limit requested
+    const related = data.data.filter((article: any) => article.slug !== currentSlug);
+    return related.slice(0, limit);
+}
+
 export async function getTools(page = 1, limit = 12, category = '', sort = '') {
     // Revalidate tools catalog every 60 seconds
     const q = category ? `&category=${category}` : '';
