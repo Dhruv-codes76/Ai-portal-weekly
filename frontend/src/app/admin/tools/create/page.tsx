@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { experimental_useObject } from '@ai-sdk/react';
+import { z } from 'zod';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SEOEditor from "@/components/admin/SEOEditor";
 import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
-import RichTextEditor from "@/components/admin/RichTextEditor";
+import dynamic from "next/dynamic";
+const RichTextEditor = dynamic(() => import("@/components/admin/RichTextEditor"), { ssr: false });
 import { Sparkles, Wand2 } from "lucide-react";
 
 export default function CreateToolPage() {
@@ -14,6 +17,7 @@ export default function CreateToolPage() {
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [error, setError] = useState("");
     const [aiTips, setAiTips] = useState<string[]>([]);
+    const [scrapeUrl, setScrapeUrl] = useState("");
     const [formData, setFormData] = useState({
         name: "",
         slug: "",
@@ -37,6 +41,77 @@ export default function CreateToolPage() {
         featuredImageAlt: "",
         focusKeyphrase: "",
     });
+
+    const { submit: submitScrape, isLoading: isScraping, object: streamObject } = experimental_useObject({
+        api: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/tools/scrape-stream`,
+        fetch: async (input, init) => {
+            const token = localStorage.getItem("adminToken");
+            return fetch(input, {
+                ...init,
+                headers: {
+                    ...(init?.headers || {}),
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+        },
+        schema: z.object({
+            name: z.string().optional(),
+            description: z.string().optional(),
+            focusKeyphrase: z.string().optional(),
+            seoMetaTitle: z.string().optional(),
+            seoMetaDescription: z.string().optional(),
+            featuredImageAlt: z.string().optional(),
+            bestUsedFor: z.string().optional(),
+            startingPrice: z.string().optional(),
+            pricing: z.enum(['free', 'freemium', 'paid']).optional(),
+            platforms: z.string().optional()
+        }),
+        onFinish({ object }) {
+            if (object) {
+                setFormData(prev => ({
+                    ...prev,
+                    name: object.name || prev.name,
+                    description: object.description || prev.description,
+                    focusKeyphrase: object.focusKeyphrase || prev.focusKeyphrase,
+                    website: scrapeUrl || prev.website,
+                    seoMetaTitle: object.seoMetaTitle || prev.seoMetaTitle,
+                    seoMetaDescription: object.seoMetaDescription || prev.seoMetaDescription,
+                    featuredImageAlt: object.featuredImageAlt || prev.featuredImageAlt,
+                    bestUsedFor: object.bestUsedFor || prev.bestUsedFor,
+                    startingPrice: object.startingPrice || prev.startingPrice,
+                    pricing: object.pricing || prev.pricing,
+                    platforms: object.platforms || prev.platforms
+                }));
+            }
+        },
+        onError(err) {
+            console.error("Streaming error:", err);
+            setError("Streaming failed.");
+        }
+    });
+
+    const startStreaming = () => {
+        if (!scrapeUrl) return;
+        submitScrape({ url: scrapeUrl });
+    };
+
+    useEffect(() => {
+        if (isScraping && streamObject) {
+             setFormData(prev => ({
+                 ...prev,
+                 ...(streamObject.name && { name: streamObject.name }),
+                 ...(streamObject.description && { description: streamObject.description }),
+                 ...(streamObject.focusKeyphrase && { focusKeyphrase: streamObject.focusKeyphrase }),
+                 ...(streamObject.seoMetaTitle && { seoMetaTitle: streamObject.seoMetaTitle }),
+                 ...(streamObject.seoMetaDescription && { seoMetaDescription: streamObject.seoMetaDescription }),
+                 ...(streamObject.featuredImageAlt && { featuredImageAlt: streamObject.featuredImageAlt }),
+                 ...(streamObject.bestUsedFor && { bestUsedFor: streamObject.bestUsedFor }),
+                 ...(streamObject.startingPrice && { startingPrice: streamObject.startingPrice }),
+                 ...(streamObject.pricing && { pricing: streamObject.pricing }),
+                 ...(streamObject.platforms && { platforms: streamObject.platforms })
+             }));
+        }
+    }, [isScraping, streamObject]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -159,6 +234,46 @@ export default function CreateToolPage() {
             </div>
 
             <h1 className="text-4xl font-sans font-bold tracking-tight mb-8">Add New Tool to Catalog</h1>
+
+            {/* MAGIC SCRAPER UI */}
+            <div className="mb-10 border-4 border-foreground p-6 bg-muted/30">
+                <div className="flex items-center gap-3 mb-4">
+                    <Wand2 className="w-6 h-6 text-primary" />
+                    <h2 className="text-xl font-bold uppercase tracking-widest">Magic Scraper (Streaming)</h2>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground mb-4">
+                    Paste a software website URL to instantly scrape, structure, and auto-catalog the tool. 
+                    Tokens stream back in real-time.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <input 
+                        type="url" 
+                        value={scrapeUrl}
+                        onChange={(e) => setScrapeUrl(e.target.value)}
+                        placeholder="https://example.com/tool"
+                        className="flex-1 p-3 bg-transparent border-2 border-border focus:border-foreground focus:outline-none transition-colors font-mono text-sm"
+                        disabled={isScraping}
+                    />
+                    <button 
+                        type="button" 
+                        onClick={startStreaming}
+                        disabled={isScraping || !scrapeUrl}
+                        className="bg-foreground text-background px-6 py-3 font-bold uppercase tracking-widest hover:bg-background hover:text-foreground border-2 border-foreground transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {isScraping ? (
+                            <>
+                                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2"></span>
+                                Scraping...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Initiate Magic
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
 
             {error && (
                 <div className="mb-8 p-4 border border-red-500 text-red-500 text-sm font-medium">

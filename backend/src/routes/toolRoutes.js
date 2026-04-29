@@ -11,10 +11,12 @@ const {
     deactivateTool,
     restoreTool,
     autoFillTool,
-    visitTool
+    visitTool,
+    scrapeAndStreamTool
 } = require('../controllers/toolController');
 
 router.get('/', getTools);
+router.post('/scrape-stream', authMiddleware, scrapeAndStreamTool);
 router.post('/auto-fill', authMiddleware, autoFillTool);
 router.get('/:slug', getToolBySlug);
 router.post('/:slug/visit', visitTool);

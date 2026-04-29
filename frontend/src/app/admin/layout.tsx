@@ -8,6 +8,7 @@ import { LayoutDashboard, Newspaper, Wrench, LogOut, Menu, X, ShieldAlert } from
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const isLogin = pathname === '/admin/login';
 
     useEffect(() => {
+        setIsMounted(true);
         if (isLogin) {
                         setIsAuthenticated(true);
             return;
@@ -28,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [router, isLogin]);
 
-    if (!isAuthenticated) return (
+    if (!isMounted || !isAuthenticated) return (
         <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
         </div>

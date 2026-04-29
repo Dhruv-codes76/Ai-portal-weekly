@@ -3,6 +3,7 @@ import { getToolBySlug } from "@/lib/api";
 import BackLink from "@/components/BackLink";
 import TrackVisit from "@/components/TrackVisit";
 import { Monitor, Smartphone, Apple, Sparkles, Navigation } from "lucide-react";
+import SEOStructuredData from "@/components/SEOStructuredData";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug;
@@ -50,19 +51,6 @@ export default async function SingleToolPage({ params }: { params: Promise<{ slu
         notFound();
     }
 
-    const softwareAppJsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'SoftwareApplication',
-        name: tool.name,
-        description: tool.description,
-        applicationCategory: tool.category?.name || 'MultimediaApplication',
-        operatingSystem: tool.platforms?.join(', ') || 'Web',
-        offers: {
-            '@type': 'Offer',
-            price: tool.startingPrice || (tool.pricing === 'free' ? '0' : 'Varies'),
-            priceCurrency: 'USD',
-        },
-    };
 
     const breadcrumbJsonLd = {
         '@context': 'https://schema.org',
@@ -92,12 +80,19 @@ export default async function SingleToolPage({ params }: { params: Promise<{ slu
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <TrackVisit slug={tool.slug} />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ 
-                    __html: JSON.stringify([softwareAppJsonLd, breadcrumbJsonLd]) 
+            <SEOStructuredData 
+                type="SoftwareApplication"
+                data={{
+                    title: tool.name,
+                    description: tool.description,
+                    image: tool.featuredImage || tool.ogImage,
+                    url: `https://www.aiportalweekly.com/tools/${tool.slug}`,
+                    category: tool.category?.name,
+                    operatingSystem: tool.platforms?.join(', '),
+                    price: tool.startingPrice || (tool.pricing === 'free' ? '0' : undefined)
                 }}
             />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
             <BackLink href="/tools" label="Catalog" />
 

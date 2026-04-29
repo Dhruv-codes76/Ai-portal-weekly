@@ -92,4 +92,26 @@ const autoGenerateNews = async (req, res, next) => {
     }
 };
 
-module.exports = { getNews, getNewsBySlug, createNews, updateNews, deactivateNews, restoreNews, autoGenerateNews };
+const scrapeAndStreamNews = async (req, res, next) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ error: "Source URL is required" });
+
+        const { scrapeUrlContent } = require('../utils/scraperUtils');
+        const aiWriterService = require('../services/aiWriterService');
+
+        const scrapedData = await scrapeUrlContent(url);
+        
+        const result = await aiWriterService.streamRewriteNews(scrapedData.title, scrapedData.text);
+
+        // Uses Vercel AI SDK to stream JSON tokens to Express response
+        result.pipeTextStreamToResponse(res);
+    } catch (error) {
+        console.error("Streaming error:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Failed to process the URL" });
+        }
+    }
+};
+
+module.exports = { getNews, getNewsBySlug, createNews, updateNews, deactivateNews, restoreNews, autoGenerateNews, scrapeAndStreamNews };

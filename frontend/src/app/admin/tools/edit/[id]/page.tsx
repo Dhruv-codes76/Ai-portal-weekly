@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SEOEditor from "@/components/admin/SEOEditor";
 import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
-import RichTextEditor from "@/components/admin/RichTextEditor";
+import dynamic from "next/dynamic";
+const RichTextEditor = dynamic(() => import("@/components/admin/RichTextEditor"), { ssr: false });
 import { Sparkles, Wand2, Loader2 } from "lucide-react";
 
 export default function EditToolPage({ params }: { params: Promise<{ id: string }> }) {

@@ -2,8 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, IndianRupee } from 'lucide-react';
 
-// Assuming newsItems are passed in, typed as any for now to decouple from Prisma client typing
-export default function IndiaHubSection({ blogs = [] }: { blogs: any[] }) {
+// Assuming newsItems are passed in, typing to match required fields
+export default function IndiaHubSection({ blogs = [] }: { blogs: { id: string | number; slug: string; title: string; summary: string }[] }) {
     if (!blogs || blogs.length === 0) return null;
 
     return (

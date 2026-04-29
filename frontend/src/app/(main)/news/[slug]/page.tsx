@@ -5,6 +5,7 @@ import BackLink from "@/components/BackLink";
 import SwipeToBack from "@/components/SwipeToBack";
 import ArticleClientControls from "./ArticleClientControls";
 import RealitySidebar from "@/components/RealitySidebar";
+import SEOStructuredData from "@/components/SEOStructuredData";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug;
@@ -50,19 +51,6 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
         year: "numeric", month: "long", day: "numeric",
     });
 
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'NewsArticle',
-        headline: article.title,
-        description: article.summary,
-        image: article.ogImage || '',
-        datePublished: article.createdAt,
-        dateModified: article.updatedAt || article.createdAt,
-        author: {
-            '@type': 'Organization',
-            name: 'AI Intelligence Portal',
-        },
-    };
 
     const breadcrumbJsonLd = {
         '@context': 'https://schema.org',
@@ -91,14 +79,19 @@ export default async function SingleNewsPage({ params }: { params: Promise<{ slu
 
     return (
         <SwipeToBack>
+            <SEOStructuredData 
+                type="Article"
+                data={{
+                    title: article.title,
+                    description: article.summary,
+                    image: article.featuredImage || article.ogImage,
+                    url: `https://www.aiportalweekly.com/news/${article.slug}`,
+                    datePublished: article.createdAt,
+                    dateModified: article.updatedAt || article.createdAt
+                }}
+            />
             <div className="max-w-[850px] mx-auto px-4 sm:px-6 py-8 md:py-16 animate-fade-in animate-slide-up pb-24">
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ 
-                        __html: JSON.stringify([jsonLd, breadcrumbJsonLd]) 
-                    }}
-                />
-
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
                 <div className="mb-10 flex justify-between items-center">
                     <BackLink href="/news" label="Back to News" />

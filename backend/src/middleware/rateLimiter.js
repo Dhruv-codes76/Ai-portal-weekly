@@ -3,7 +3,7 @@ const AppError = require('../utils/AppError');
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 50,
     handler: (req, res, next, options) => {
         next(new AppError('Too many login attempts from this IP, please try again after 15 minutes', 429));
     }

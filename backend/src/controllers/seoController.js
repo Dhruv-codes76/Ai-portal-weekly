@@ -1,4 +1,6 @@
 const aiWriterService = require('../services/aiWriterService');
+const { generateObject } = require('ai');
+const { z } = require('zod');
 
 const optimizeSEO = async (req, res) => {
     try {
@@ -8,63 +10,44 @@ const optimizeSEO = async (req, res) => {
             return res.status(400).json({ error: "Content is required" });
         }
 
-        const seoData = await aiWriterService.executeWithRetry(async (genAI, activeModel) => {
-            const model = genAI.getGenerativeModel({ model: activeModel });
+        const seoSchema = z.object({
+            focusKeyphrase: z.string().describe("the target keyword"),
+            seoMetaTitle: z.string().min(45).max(60),
+            slug: z.string().max(60),
+            seoMetaDescription: z.string().min(140).max(155),
+            summary: z.string().max(180),
+            featuredImageAlt: z.string(),
+            improvementTips: z.array(z.string()),
+            healthMetrics: z.object({
+                hasShortParagraphs: z.boolean(),
+                variedSentenceStarts: z.boolean(),
+                passiveVoicePercentage: z.number(),
+                transitionsPercentage: z.number()
+            })
+        });
 
-            const prompt = `
-            You are a Senior SEO Specialist for "AI Portal Weekly". 
-            Analyze the following ${type || 'article'} content and provide a perfect SEO metadata set.
-            
-            SEO AUDIT RULES (STRICT):
-            1. **Keyphrase**: Use "${focusKeyphrase || 'Identify a 2-4 word primary keyphrase'}" as the focusKeyphrase.
-            2. **Title**: Generate an "seoMetaTitle" (Strictly 45-60 chars) including the keyphrase.
-            3. **Slug**: Generate a clean "slug" (max 60 chars) starting with the keyphrase.
-            4. **Meta Description**: Generate an "seoMetaDescription" (Strictly 140-155 characters). NEVER exceed 155.
-            5. **Alt Text**: Generate "featuredImageAlt" including the keyphrase.
-            6. **Readability Metrics**: Evaluate Passive Voice (<10%) and Transitions (>25%).
+        const seoData = await aiWriterService.executeWithRetry(async (model) => {
+            const { object } = await generateObject({
+                model,
+                schema: seoSchema,
+                prompt: `
+                You are a Senior SEO Specialist for "AI Portal Weekly". 
+                Analyze the following ${type || 'article'} content and provide a perfect SEO metadata set.
+                
+                SEO AUDIT RULES:
+                1. **Keyphrase**: Use "${focusKeyphrase || 'Identify a 2-4 word primary keyphrase'}" as the focusKeyphrase.
+                2. **Title**: 45-60 chars including the keyphrase.
+                3. **Slug**: Clean URL slug starting with the keyphrase.
+                4. **Meta Description**: 140-155 characters.
+                5. **Alt Text**: Include the keyphrase.
+                6. **Readability Metrics**: Evaluate Passive Voice (<10%) and Transitions (>25%).
 
-            Content Overview: "${content.substring(0, 3000)}"
-            Published Title: "${title || ''}"
-
-            Respond ONLY with this JSON structure:
-            {
-                "focusKeyphrase": "the target keyword",
-                "seoMetaTitle": "45-60 chars",
-                "slug": "url-slug-here",
-                "seoMetaDescription": "140-155 chars",
-                "summary": "1-2 sentence lead summary (max 180 chars)",
-                "featuredImageAlt": "Alt text with keyword",
-                "improvementTips": ["Tip 1", "Tip 2"],
-                "healthMetrics": {
-                    "hasShortParagraphs": boolean,
-                    "variedSentenceStarts": boolean,
-                    "passiveVoicePercentage": number,
-                    "transitionsPercentage": number
-                }
-            }
-            `;
-
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let text = response.text();
-            
-            // Robust JSON extraction
-            text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-            // Find the first { and last } to ensure pure JSON
-            const firstBrace = text.indexOf('{');
-            const lastBrace = text.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1) {
-                text = text.substring(firstBrace, lastBrace + 1);
-            }
-
-            return JSON.parse(text);
+                Content Overview: "${content.substring(0, 3000)}"
+                Published Title: "${title || ''}"
+                `
+            });
+            return object;
         }, 'gemini-flash-lite-latest');
-
-        // Backend enforcement to guarantee description is under 160 chars for UI safety
-        if (seoData.seoMetaDescription && seoData.seoMetaDescription.length > 160) {
-            seoData.seoMetaDescription = seoData.seoMetaDescription.substring(0, 157) + "...";
-        }
 
         res.json(seoData);
     } catch (error) {
@@ -76,3 +59,4 @@ const optimizeSEO = async (req, res) => {
 module.exports = {
     optimizeSEO
 };
+

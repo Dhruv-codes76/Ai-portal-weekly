@@ -93,5 +93,27 @@ const autoFillTool = async (req, res, next) => {
         next(error);
     }
 };
+const scrapeAndStreamTool = async (req, res, next) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ error: "Source URL is required" });
 
-module.exports = { getTools, getToolBySlug, visitTool, createTool, updateTool, deactivateTool, restoreTool, autoFillTool };
+        const { scrapeUrlContent } = require('../utils/scraperUtils');
+        const AIWriterService = require('../services/aiWriterService');
+        const aiWriterService = new AIWriterService();
+
+        const scrapedData = await scrapeUrlContent(url);
+        
+        const result = await aiWriterService.streamRewriteTool(scrapedData.title, scrapedData.text);
+
+        // Uses Vercel AI SDK to stream JSON tokens to Express response
+        result.pipeTextStreamToResponse(res);
+    } catch (error) {
+        console.error("Streaming error:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Failed to process the URL" });
+        }
+    }
+};
+
+module.exports = { getTools, getToolBySlug, visitTool, createTool, updateTool, deactivateTool, restoreTool, autoFillTool, scrapeAndStreamTool };

@@ -16,8 +16,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ai-sdk/google": "^3.0.64",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
+    "ai": "^6.0.168",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",

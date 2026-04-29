@@ -32,7 +32,7 @@ gemini.md
 # Scripts
 seedadmin.js
 
+# AI Assistant
+.gemini/
+everything-claude-code-main/
 .aierules
-
-# Agents
-.agents/

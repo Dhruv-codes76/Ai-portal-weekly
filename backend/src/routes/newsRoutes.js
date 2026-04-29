@@ -10,12 +10,16 @@ const {
     updateNews,
     deactivateNews,
     restoreNews,
-    autoGenerateNews
+    autoGenerateNews,
+    scrapeAndStreamNews
 } = require('../controllers/newsController');
+
 
 router.get('/', getNews);
 router.post('/auto-generate', authMiddleware, autoGenerateNews);
+router.post('/scrape-stream', authMiddleware, scrapeAndStreamNews);
 router.get('/:slug', getNewsBySlug);
+
 
 router.post('/', authMiddleware, upload.fields([
   { name: 'featuredImage', maxCount: 1 },

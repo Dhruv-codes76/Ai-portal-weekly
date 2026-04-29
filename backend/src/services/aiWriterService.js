@@ -1,27 +1,63 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { createGoogleGenerativeAI, google } = require('@ai-sdk/google');
+const { generateObject, generateText, streamObject } = require('ai');
+const { z } = require('zod');
+const Chunker = require('../utils/chunker');
+
+
 
 class AIWriterService {
     constructor() {
         const keys = [];
         
-        // 1. Check for individual numbered keys (most reliable for Render)
         if (process.env.GEMINI_API_KEY_1) keys.push(process.env.GEMINI_API_KEY_1.trim());
         if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2.trim());
         if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3.trim());
 
-        // 2. Fallback to comma-separated list if no numbered keys found
-        // Use the collected and deduped keys
         this.apiKeys = [...new Set(keys)];
-
         this.currentIndex = 0;
-        this.currentModel = 'gemini-2.5-flash'; // High-End Default for Scraping
+        this.currentModel = 'gemini-1.5-flash-latest'; // Using -latest for better SDK compatibility
         
         if (this.apiKeys.length === 0) {
             console.warn("WARNING: No Gemini API keys found (tried GEMINI_API_KEY_1-3). AI Writer will fail.");
         } else {
-            console.log(`AI Writer initialized with ${this.apiKeys.length} API keys. Scraper Default: ${this.currentModel}`);
+            console.log(`AI Writer initialized with ${this.apiKeys.length} PRO API keys. Default: ${this.currentModel}`);
         }
+
+
+
+
+
+
+        // Define Schemas for Structured Output
+        this.newsSchema = z.object({
+            title: z.string().describe("Blunt, Catchy Title"),
+            summary: z.string().max(180).describe("Punchy summary"),
+            focusKeyphrase: z.string().describe("2-3 word keyword"),
+            content: z.string().describe("HTML structure with <h2> and <p>. Minimum 250 words."),
+            seoMetaTitle: z.string().min(45).max(60),
+            seoMetaDescription: z.string().min(140).max(155),
+            featuredImageAlt: z.string(),
+            realityClaim: z.string().describe("What marketing hype says"),
+            realityTruth: z.string().describe("The blunt, honest reality (1-2 sentences)"),
+            quickTake: z.string().describe("The 5-second winner take-away"),
+            hypeLevel: z.number().min(1).max(5)
+        });
+
+        this.toolSchema = z.object({
+            name: z.string(),
+            parentCompany: z.string().optional(),
+            focusKeyphrase: z.string(),
+            description: z.string().describe("HTML structure with <h2> and <p>"),
+            seoMetaTitle: z.string().min(45).max(60),
+            seoMetaDescription: z.string().min(140).max(155),
+            featuredImageAlt: z.string(),
+            bestUsedFor: z.string().describe("e.g. Content Creators, Developers"),
+            startingPrice: z.string().describe("e.g. $9.99/mo or Free"),
+            pricing: z.enum(['free', 'freemium', 'paid']),
+            platforms: z.string().describe("Web, iOS, Android (comma separated)")
+        });
     }
+
 
     /**
      * Helper to safely extract and parse JSON from a string that might contain other text.
@@ -50,14 +86,20 @@ class AIWriterService {
     }
 
     /**
-     * Helper to get a configured GenAI instance with the current key.
+     * Helper to get a configured AI SDK Google model instance with current key rotation.
      */
-    getGenAI() {
+    getModel(modelName) {
         if (this.apiKeys.length === 0) {
             throw new Error("No Gemini API keys found in environment variables.");
         }
-        return new GoogleGenerativeAI(this.apiKeys[this.currentIndex]);
+        
+        const googleProvider = createGoogleGenerativeAI({
+            apiKey: this.apiKeys[this.currentIndex]
+        });
+
+        return googleProvider(modelName || this.currentModel);
     }
+
 
     /**
      * Rotates to the next API key.
@@ -87,8 +129,9 @@ class AIWriterService {
         const maxRetries = this.apiKeys.length * 2; 
 
         try {
-            return await operation(this.getGenAI(), activeModel);
+            return await operation(this.getModel(activeModel));
         } catch (error) {
+
             const isDailyQuotaExhausted = error.message?.includes('GenerateRequestsPerDayPerProjectPerModel-FreeTier');
             const isRateLimit = error.status === 429 || error.message?.includes('Minute');
 
@@ -100,148 +143,227 @@ class AIWriterService {
                 console.error(`Gemini Error (${activeModel}):`, error.message);
             }
             
-            const isRetriable = error.status === 400 || error.status === 404 || error.status === 429 || error.message?.includes('quota') || error.message?.includes('not found') || error.message?.includes('API_KEY_INVALID') || error instanceof SyntaxError || error.message?.includes('JSON');
+            const isRetriable = error.status === 400 || error.status === 404 || error.status === 429 || error.status === 503 || error.message?.includes('quota') || error.message?.includes('not found') || error.message?.includes('API_KEY_INVALID') || error instanceof SyntaxError || error.message?.includes('JSON');
             
             if (isRetriable && retryCount < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Wait longer for experimental models (5 requests/min is very tight)
+                const waitTime = isRateLimit ? 12000 : 2000; 
+                await new Promise(resolve => setTimeout(resolve, waitTime));
                 
                 const hasCycledAllKeys = this.rotateKey();
 
-                // FALLBACK: If 2.5 is failing on all keys, downgrade to 1.5 for the scraper
-                if (!modelOverride && hasCycledAllKeys && this.currentModel === 'gemini-2.5-flash') {
-                    console.log("⚠️ ALL KEYS FAILED for gemini-2.5-flash. Falling back to gemini-1.5-flash...");
+                // FALLBACK: If 2.5/3 is failing on all keys, downgrade to 1.5 for stability
+                if (!modelOverride && hasCycledAllKeys && (this.currentModel.includes('2.5') || this.currentModel.includes('3'))) {
+                    console.log(`⚠️ Experimental models failing on all keys. Falling back to gemini-1.5-flash...`);
                     this.currentModel = 'gemini-1.5-flash';
                 }
 
                 return await this.executeWithRetry(operation, modelOverride, retryCount + 1);
             }
+
             throw error;
         }
     }
 
-    /**
-     * Uses Gemini to rewrite raw news text into a structured JSON format with strict SEO optimization.
-     */
     async rewriteNews(rawTitle, rawText) {
-        return await this.executeWithRetry(async (genAI, activeModel) => {
-            const model = genAI.getGenerativeModel({
-                model: activeModel,
-                generationConfig: { responseMimeType: "application/json" }
+        const initialDraft = await this.executeWithRetry(async (model) => {
+            const { object } = await generateObject({
+                model,
+                schema: this.newsSchema,
+                mode: 'json',
+                system: "You are a specialized JSON extraction engine. Output ONLY a valid JSON object matching the requested schema. Do not include or share your internal reasoning, thoughts, or any other text.",
+                prompt: `
+                Extract facts and structure them into JSON. 
+                
+                Raw Title: ${rawTitle}
+                Raw Text: ${rawText}
+                `
             });
+            return object;
+        });
 
-            const prompt = `
-            You are the Chief Editor for "AI Portal Weekly". 
-            Your audience: Final-year CSE graduates from Tier-3 colleges in India (e.g., Kanpur, Indore) who are building careers through side-hustles and self-learning.
-            
-            CONTENT RULES (STRICT):
-            1. **No AI Fluff**: NEVER use words like "Furthermore," "Moreover," "Additionally," "In conclusion," or "In today's rapidly evolving landscape."
-            2. **Direct Tone**: Write with a blunt, "down-to-reality" point of view. Tell the truth, even if it's negative.
-            3. **Clarity & Depth**: Every article MUST be at least 250 words long. Avoid being vague.
-            4. **Educational Analogies**: Explain complex tech concepts using analogies relevant to a student (e.g., tokens like canteen coins, GPUs like a hostel study group).
-            5. **Indian Utility**: Every brief must answer: "How does this help an Indian student with zero placement?" or "Is this tool free in India without a credit card?"
-            6. **Meta lengths**: 
-               - "seoMetaTitle": 45-60 chars (Include "India" if possible). 
-               - "seoMetaDescription": 140-155 chars.
 
-            Raw Title: ${rawTitle}
-            Raw Text: ${rawText}
+        console.log("Extraction Pass Complete. Starting Humanizer Pass...");
+        return await this.humanizeNewsContent(initialDraft);
 
-            Respond ONLY with this JSON structure:
-            {
-                "title": "Blunt, Catchy Title",
-                "summary": "150-char punchy summary",
-                "focusKeyphrase": "2-3 word keyword",
-                "content": "HTML structure with <h2> and <p>. Minimum 250 words. Focus on depth and clarity. Use analogies. Mention INR/Rupee pricing if relevant.",
-                "seoMetaTitle": "SEO title",
-                "seoMetaDescription": "SEO meta description",
-                "featuredImageAlt": "Alt text",
-                "realityClaim": "What the marketing hype says",
-                "realityTruth": "The blunt, honest reality we found (1-2 sentences)",
-                "quickTake": "The 5-second winner take-away",
-                "hypeLevel": <1-5>
-            }
-            `;
+    }
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return this.safeJSONParse(response.text(), 'object');
+    /**
+     * The Humanizer Skill: A second pass to polish tone and remove AI-speak.
+     */
+    async humanizeNewsContent(newsData) {
+        return await this.executeWithRetry(async (model) => {
+            const { object } = await generateObject({
+                model,
+                schema: this.newsSchema,
+                mode: 'json',
+                system: "You are a tone-polishing engine. Only output valid JSON. No thoughts or reasoning.",
+                prompt: `
+                You are the "Tone Polish" editor for AI Portal Weekly. 
+                Audience: Indian CSE students. 
+                Tone: Blunt, Reality-first, No Hype. 
+                
+                Task: Rewrite the 'content' and 'summary' fields of the provided JSON to sound like a human senior engineer. 
+                Remove corporate fluff (moreover, furthermore, dive in).
+                
+                DRAFT:
+                ${JSON.stringify(newsData)}
+                `
+            });
+            return object;
         });
     }
 
     /**
-     * Uses Gemini Search Grounding to find breaking news today.
+     * Extracts a concise list of facts from potentially huge text.
+     * Parallelizes processing across chunks if necessary.
      */
+    async extractFactSheet(rawTitle, rawText) {
+        const chunks = Chunker.splitText(rawText, 6000);
+        if (chunks.length === 1) return rawText; // Small enough, use directly
+
+        console.log(`Processing ${chunks.length} chunks for Fact Extraction...`);
+
+        const factsPerChunk = await Promise.all(chunks.map(async (chunk, index) => {
+            return await this.executeWithRetry(async (model) => {
+                const { text } = await generateText({
+                    model,
+                    system: "You are a senior analyst for AI Portal Weekly. Extra ONLY raw facts from the text. Be extremely brief. No fluff.",
+                    prompt: `EXTRACT FACTS FROM CHUNK ${index+1}:\n${chunk}`
+                });
+                return text;
+            });
+        }));
+
+        const consolidatedFacts = await this.executeWithRetry(async (model) => {
+            const { text } = await generateText({
+                model,
+                system: "You are a master analyst. Consolidate these facts into a single, comprehensive Master Fact Sheet for a news article. Remove duplicates. No summary, just bullet points.",
+                prompt: `FACTS FROM ALL CHUNKS:\n${factsPerChunk.join('\n\n')}`
+            });
+            return text;
+        });
+
+        return consolidatedFacts;
+    }
+
+    /**
+     * STREAMING: Generates and streams a fully processed news article.
+     */
+    async streamRewriteNews(rawTitle, rawText) {
+        // PRE-PROCESS: Extract facts if text is very long
+        let processedText = rawText;
+        if (rawText.length > 8000) {
+            processedText = await this.extractFactSheet(rawTitle, rawText);
+        }
+
+        return await this.executeWithRetry(async (model) => {
+            const result = await streamObject({
+                model,
+                schema: this.newsSchema,
+                mode: 'json',
+                system: "You are a JSON stream response engine. Output ONLY valid JSON matching the schema.",
+                prompt: `
+                You are the Chief Editor and "Tone Polish" expert for "AI Portal Weekly". 
+                Your audience: Indian CSE students (Beginners).
+                Tone: Blunt, Reality-first, No Hype, Senior Engineer mentor vibe.
+
+                TASK:
+                Write a full news article as a JSON object based on the Intelligence Fact Sheet.
+                1. REMOVE: "In today's world", "unprecedented", "seamlessly", "furthermore", "moreover".
+                2. ADD: Blunt truths about cost and usability in India. 
+                
+                Intelligence Fact Sheet:
+                ${processedText}
+                `
+            });
+            return result; 
+        });
+    }
+
+    /**
+     * STREAMING: Generates and streams a fully processed Tool review/catalog entry.
+     */
+    async streamRewriteTool(rawTitle, rawText) {
+        // PRE-PROCESS: Extract facts if text is very long
+        let processedText = rawText;
+        if (rawText.length > 8000) {
+            processedText = await this.extractFactSheet(rawTitle, rawText);
+        }
+
+        return await this.executeWithRetry(async (model) => {
+            const result = await streamObject({
+                model,
+                schema: this.toolSchema,
+                mode: 'json',
+                system: "You are a JSON stream response engine. Output ONLY valid JSON matching the schema.",
+                prompt: `
+                You are the Chief Editor and "Tone Polish" expert for "AI Portal Weekly". 
+                Your audience: Indian CSE students (Beginners).
+                Tone: Blunt, Reality-first, No Hype, Senior Engineer mentor vibe.
+
+                TASK:
+                Take the following Intelligence Fact Sheet about a software/AI tool and write a full tool catalogue entry as a JSON object.
+                1. REMOVE corporate fluff. Write a blunt review.
+                2. Explicitly map Pricing to 'free', 'freemium', or 'paid'.
+                3. Ensure description includes <h2> and <p> HTML structures.
+
+                Intelligence Fact Sheet:
+                ${processedText}
+                `
+            });
+            return result; 
+        });
+    }
+
+
+
+
+
+
     async searchLatestNews() {
-        return await this.executeWithRetry(async (genAI, activeModel) => {
-            const model = genAI.getGenerativeModel({ 
-                model: activeModel,
-                tools: [{ googleSearch: {} }] 
+        return await this.executeWithRetry(async (model) => {
+            const { text } = await generateText({
+                model,
+                prompt: `
+                Search Google for the 1 most impactful artificial intelligence news announcement from the last 24 hours.
+                Return ONLY a JSON array containing the news item.
+                Format:
+                [
+                    {
+                        "url": "original source URL",
+                        "rawTitle": "The headline",
+                        "rawText": "A 3 paragraph detailed factual summary of what was announced"
+                    }
+                ]
+                `
             });
-
-            const prompt = `
-            Search Google for the 1 most impactful artificial intelligence news announcement from the last 24 hours.
-            Return ONLY a JSON array containing the news item.
-            Format:
-            [
-                {
-                    "url": "original source URL",
-                    "rawTitle": "The headline",
-                    "rawText": "A 3 paragraph detailed factual summary of what was announced"
-                }
-            ]
-            `;
-
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return this.safeJSONParse(response.text(), 'array');
+            return this.safeJSONParse(text, 'array');
         });
     }
-    /**
-     * Uses Gemini to rewrite raw tool text/URL info into a structured JSON format with complete SEO fields.
-     */
+
     async rewriteTool(rawTitle, rawText) {
-        return await this.executeWithRetry(async (genAI, activeModel) => {
-            const model = genAI.getGenerativeModel({ 
-                model: activeModel,
-                generationConfig: { responseMimeType: "application/json" }
+        return await this.executeWithRetry(async (model) => {
+            const { object } = await generateObject({
+                model,
+                schema: this.toolSchema,
+                prompt: `
+                You are a senior analyst for "AI Portal Weekly". 
+                Parse raw information about an AI Tool into structured JSON.
+                
+                SEO CONTENT RULES:
+                1. Identify a 2-3 word "focusKeyphrase".
+                2. Write a concise, 2-3 paragraph objective description (Factual, No Hype).
+                3. Usage Tip: One sentence detailing the "5-minute win".
+
+                Raw Title: ${rawTitle}
+                Raw Information: ${rawText}
+                `
             });
-
-            const prompt = `
-            You are a senior analyst for "AI Portal Weekly". 
-            Your goal is to parse raw information about an AI Tool and return a structured JSON response.
-            
-            SEO CONTENT RULES (CRITICAL):
-            1. **Keyphrase**: Identify a 2-3 word "focusKeyphrase" (e.g., "AI Video Generator").
-            2. **Description**: Write a concise, 2-3 paragraph objective description of what the tool does. Do NOT hype it. Use straightforward words.
-            3. **Meta lengths**: 
-               - "seoMetaTitle" MUST be between 45 and 60 characters. 
-               - "seoMetaDescription" MUST be between 140 and 155 characters. (NEVER exceed 155)
-            4. **Usage Tip**: Provide one sentence detailing the fastest way to get value ("5-minute win").
-
-            Raw Title: ${rawTitle}
-            Raw Information: ${rawText}
-
-            Respond ONLY with this JSON structure. Any missing fields should be left empty or given a reasonable guess based on the text.
-            {
-                "name": "Exact Name of the Tool",
-                "parentCompany": "Name of the parent company if mentioned/known, else empty string",
-                "focusKeyphrase": "the 2-3 word keyword",
-                "description": "HTML structure with <h2> and <p>. Ensure Keyphrase is present. Objective and factual.",
-                "seoMetaTitle": "Strictly 45-60 chars including Keyphrase",
-                "seoMetaDescription": "Strictly 140-155 chars including Keyphrase",
-                "featuredImageAlt": "Alt text including Focus Keyphrase",
-                "features": ["3 to 5 core features in active voice"],
-                "tutorials": ["Any youtube URLs found in the text for tutorials/demos. Else empty array"],
-                "limitations": "Who this tool is NOT for (1 sentence)",
-                "usageTip": "The 5-minute win (1 sentence)"
-            }
-            `;
-
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return this.safeJSONParse(response.text(), 'object');
-        }, 'gemini-1.5-flash'); // Hard-code fallback to 1.5 flash for tool processing as requested
+            return object;
+        }, 'gemini-1.5-flash');
     }
+
 }
 
 module.exports = new AIWriterService();

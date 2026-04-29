@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { experimental_useObject } from '@ai-sdk/react';
+import { z } from 'zod';
 import SEOEditor from "@/components/admin/SEOEditor";
 import FeaturedImagePortal from "@/components/admin/FeaturedImagePortal";
-import RichTextEditor from "@/components/admin/RichTextEditor";
-import { Globe, Share2, Twitter, Info, Sparkles, Wand2, Save, Eye, AlertCircle, Search } from "lucide-react";
+import dynamic from "next/dynamic";
+const RichTextEditor = dynamic(() => import("@/components/admin/RichTextEditor"), { ssr: false });
+import { Globe, Share2, Twitter, Info, Sparkles, Wand2, Save, Eye, AlertCircle, Search, Link as LinkIcon, Download } from "lucide-react";
 import { analyzeReadability } from "@/utils/readabilityStats";
 
 export interface NewsFormData {
@@ -47,6 +50,71 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [aiHealthMetrics, setAiHealthMetrics] = useState<any | null>(null);
     const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+    const [scrapeUrl, setScrapeUrl] = useState("");
+
+    // Setup Streaming JSON Object Hook
+    const { submit: submitScrape, isLoading: isScraping, object: streamObject } = experimental_useObject({
+        api: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/news/scrape-stream`,
+        fetch: async (input, init) => {
+            const token = localStorage.getItem("adminToken");
+            return fetch(input, {
+                ...init,
+                headers: {
+                    ...init?.headers,
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+        },
+        schema: z.object({
+            title: z.string(),
+            summary: z.string(),
+            content: z.string(),
+            focusKeyphrase: z.string().optional(),
+            realityClaim: z.string().optional(),
+            realityTruth: z.string().optional(),
+            hypeLevel: z.string().optional(),
+            seoMetaTitle: z.string().optional(),
+            seoMetaDescription: z.string().optional(),
+            featuredImageAlt: z.string().optional()
+        }),
+        onFinish({ object }) {
+            if (object) {
+                setFormData(prev => ({
+                    ...prev,
+                    title: object.title || prev.title,
+                    summary: object.summary || prev.summary,
+                    content: object.content || prev.content,
+                    focusKeyphrase: object.focusKeyphrase || prev.focusKeyphrase,
+                    sourceLink: scrapeUrl,
+                    seoMetaTitle: object.seoMetaTitle || prev.seoMetaTitle,
+                    seoMetaDescription: object.seoMetaDescription || prev.seoMetaDescription,
+                    featuredImageAlt: object.featuredImageAlt || prev.featuredImageAlt
+                }));
+            }
+        },
+        onError(err) {
+            console.error("Streaming error:", err);
+            alert("Streaming failed or quota exceeded.");
+        }
+    });
+
+    // Re-writing handleMagicScrape properly
+    const startStreaming = () => {
+       if (!scrapeUrl) return;
+       submitScrape({ url: scrapeUrl });
+    };
+
+    // Sync streaming partials to form data live!
+    useEffect(() => {
+        if (isScraping && streamObject) {
+             setFormData(prev => ({
+                ...prev,
+                title: streamObject.title || prev.title,
+                summary: streamObject.summary || prev.summary,
+                content: streamObject.content || prev.content
+             }));
+        }
+    }, [isScraping, streamObject]);
 
     useEffect(() => {
         setFormData(initialData);
@@ -317,6 +385,49 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                         </p>
                     </div>
                 </div>
+
+                {/* ✨ THE MAGIC SCRAPER UI */}
+                {!isEdit && (
+                    <div className="bg-foreground text-background p-6 rounded relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                        <h3 className="text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2 relative z-10">
+                            <Wand2 className="w-5 h-5" /> 
+                            Streaming News Scraper
+                        </h3>
+                        <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                            <div className="flex-1 relative">
+                                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-background/50" />
+                                <input
+                                    type="url"
+                                    placeholder="Paste URL (TechCrunch, The Verge, etc.)"
+                                    value={scrapeUrl}
+                                    onChange={(e) => setScrapeUrl(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 bg-background/10 border border-background/20 text-background placeholder:text-background/50 focus:outline-none focus:bg-background/20 transition-colors"
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={startStreaming}
+                                disabled={isScraping || !scrapeUrl}
+                                className="px-6 py-3 bg-background text-foreground text-xs font-black tracking-widest uppercase hover:bg-background/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                            >
+                                {isScraping ? (
+                                    <>
+                                        <Download className="w-4 h-4 animate-bounce" /> Streaming...
+                                    </>
+                                ) : (
+                                    <>Start Streaming</>
+                                )}
+                            </button>
+                        </div>
+                        {isScraping && (
+                            <div className="mt-4 text-xs font-bold font-mono text-background/80 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                                [REWRITING IN REAL-TIME VIA GEMINI]
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Section 1: Core Information */}
                 <section className="space-y-6">
