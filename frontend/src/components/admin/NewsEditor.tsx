@@ -72,7 +72,7 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
             focusKeyphrase: z.string().optional(),
             realityClaim: z.string().optional(),
             realityTruth: z.string().optional(),
-            hypeLevel: z.string().optional(),
+            hypeLevel: z.union([z.string(), z.number()]).optional(),
             seoMetaTitle: z.string().optional(),
             seoMetaDescription: z.string().optional(),
             featuredImageAlt: z.string().optional()
@@ -138,7 +138,7 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                     // 2. SEO Title from keyphrase (Keyphrase | Action | Brand)
                     if (!prev.seoMetaTitle || prev.seoMetaTitle === prev.title) {
                         const titlePattern = `${value.charAt(0).toUpperCase() + value.slice(1)} | Real-World AI Insights | AI Portal`;
-                        newState.seoMetaTitle = titlePattern.substring(0, 60);
+                        newState.seoMetaTitle = titlePattern.substring(0, 70);
                     }
 
                     // 3. Meta Description (Start with keyphrase)
@@ -154,7 +154,7 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
                         .substring(0, 60)
                         .replace(/-$/, '');
                     
-                    if (!prev.seoMetaTitle) newState.seoMetaTitle = value.substring(0, 60);
+                    if (!prev.seoMetaTitle) newState.seoMetaTitle = value.substring(0, 70);
                 }
             }
             
@@ -240,7 +240,7 @@ export default function NewsEditor({ initialData, onSubmit, loading, isEdit = fa
         { label: "Focus Keyphrase in Slug", passed: readability.keywordInSlug },
         { label: "Focus Keyphrase in Meta", passed: readability.keywordInMeta },
         { label: "Keyphrase Density (0.5-2.5%)", passed: readability.keywordDensity >= 0.5 && readability.keywordDensity <= 2.5, value: `${readability.keywordDensity}%` },
-        { label: "SEO Title (45-60)", passed: formData.seoMetaTitle.length >= 45 && formData.seoMetaTitle.length <= 60 },
+        { label: "SEO Title (45-70)", passed: formData.seoMetaTitle.length >= 45 && formData.seoMetaTitle.length <= 70 },
         { label: "SEO Meta Desc (140-160)", passed: formData.seoMetaDescription.length >= 140 && formData.seoMetaDescription.length <= 160 },
         { label: "Short Paragraphs (< 150w)", passed: aiHealthMetrics ? aiHealthMetrics.hasShortParagraphs : !readability.hasLongParagraphs },
         { label: "Varied Sentence Starts", passed: aiHealthMetrics ? aiHealthMetrics.variedSentenceStarts : readability.consecutiveSentenceStarts < 3, value: aiHealthMetrics ? null : `Max ${readability.consecutiveSentenceStarts} in a row` },
