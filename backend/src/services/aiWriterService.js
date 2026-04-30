@@ -34,13 +34,13 @@ class AIWriterService {
             summary: z.string().max(180).describe("Punchy summary"),
             focusKeyphrase: z.string().describe("2-3 word keyword"),
             content: z.string().describe("HTML structure with <h2> and <p>. Minimum 250 words."),
-            seoMetaTitle: z.string().min(45).max(60),
-            seoMetaDescription: z.string().min(140).max(155),
+            seoMetaTitle: z.string().min(45).max(70).describe("SEO Title (max 70 chars)"),
+            seoMetaDescription: z.string().min(140).max(160).describe("SEO Description (max 160 chars)"),
             featuredImageAlt: z.string(),
             realityClaim: z.string().describe("What marketing hype says"),
             realityTruth: z.string().describe("The blunt, honest reality (1-2 sentences)"),
             quickTake: z.string().describe("The 5-second winner take-away"),
-            hypeLevel: z.number().min(1).max(5)
+            hypeLevel: z.number().int().min(1).max(10).describe("Hype Level on a scale of 1-10")
         });
 
         this.toolSchema = z.object({
@@ -48,8 +48,8 @@ class AIWriterService {
             parentCompany: z.string().optional(),
             focusKeyphrase: z.string(),
             description: z.string().describe("HTML structure with <h2> and <p>"),
-            seoMetaTitle: z.string().min(45).max(60),
-            seoMetaDescription: z.string().min(140).max(155),
+            seoMetaTitle: z.string().min(45).max(70).describe("SEO Title (max 70 chars)"),
+            seoMetaDescription: z.string().min(140).max(160).describe("SEO Description (max 160 chars)"),
             featuredImageAlt: z.string(),
             bestUsedFor: z.string().describe("e.g. Content Creators, Developers"),
             startingPrice: z.string().describe("e.g. $9.99/mo or Free"),
@@ -175,6 +175,11 @@ class AIWriterService {
                 prompt: `
                 Extract facts and structure them into JSON. 
                 
+                CONTENT RULES:
+                1. seoMetaTitle: EXACTLY 45-70 characters.
+                2. seoMetaDescription: EXACTLY 140-160 characters.
+                3. hypeLevel: Integer between 1 and 10.
+
                 Raw Title: ${rawTitle}
                 Raw Text: ${rawText}
                 `
@@ -206,6 +211,11 @@ class AIWriterService {
                 Task: Rewrite the 'content' and 'summary' fields of the provided JSON to sound like a human senior engineer. 
                 Remove corporate fluff (moreover, furthermore, dive in).
                 
+                STRICT CONSTRAINTS:
+                - Keep seoMetaTitle between 45-70 characters.
+                - Keep seoMetaDescription between 140-160 characters.
+                - Keep hypeLevel as an integer 1-10.
+
                 DRAFT:
                 ${JSON.stringify(newsData)}
                 `
@@ -272,6 +282,8 @@ class AIWriterService {
                 Write a full news article as a JSON object based on the Intelligence Fact Sheet.
                 1. REMOVE: "In today's world", "unprecedented", "seamlessly", "furthermore", "moreover".
                 2. ADD: Blunt truths about cost and usability in India. 
+                3. SEO: seoMetaTitle must be 45-70 chars, seoMetaDescription must be 140-160 chars.
+                4. HYPE: hypeLevel must be an integer 1-10.
                 
                 Intelligence Fact Sheet:
                 ${processedText}
@@ -307,6 +319,7 @@ class AIWriterService {
                 1. REMOVE corporate fluff. Write a blunt review.
                 2. Explicitly map Pricing to 'free', 'freemium', or 'paid'.
                 3. Ensure description includes <h2> and <p> HTML structures.
+                4. SEO: seoMetaTitle must be 45-70 chars, seoMetaDescription must be 140-160 chars.
 
                 Intelligence Fact Sheet:
                 ${processedText}

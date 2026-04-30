@@ -94,9 +94,9 @@ export default function SEOEditor({ data, onChange, baseSlug, type }: SEOEditorP
                                 name="seoMetaTitle"
                                 value={data.seoMetaTitle}
                                 onChange={handleChange}
-                                placeholder="Target: 45-60 characters"
+                                placeholder="Target: 45-70 characters"
                                 className={`w-full p-4 bg-transparent border-2 focus:border-foreground focus:outline-none text-sm font-medium transition-all ${
-                                    data.seoMetaTitle.length >= 45 && data.seoMetaTitle.length <= 60 
+                                    data.seoMetaTitle.length >= 45 && data.seoMetaTitle.length <= 70 
                                     ? "border-green-500/50" 
                                     : "border-border"
                                 }`}
@@ -105,19 +105,19 @@ export default function SEOEditor({ data, onChange, baseSlug, type }: SEOEditorP
                                 <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden mr-4">
                                     <div 
                                         className={`h-full transition-all ${
-                                            data.seoMetaTitle.length < 45 || data.seoMetaTitle.length > 60 
+                                            data.seoMetaTitle.length < 45 || data.seoMetaTitle.length > 70 
                                             ? "bg-red-500" 
                                             : "bg-green-500"
                                         }`} 
-                                        style={{ width: `${Math.min(100, (data.seoMetaTitle.length / 60) * 100)}%` }}
+                                        style={{ width: `${Math.min(100, (data.seoMetaTitle.length / 70) * 100)}%` }}
                                     />
                                 </div>
                                 <span className={`text-[10px] font-black uppercase tracking-tighter ${
-                                    (data.seoMetaTitle.length > 0 && data.seoMetaTitle.length < 45) || data.seoMetaTitle.length > 60 
+                                    (data.seoMetaTitle.length > 0 && data.seoMetaTitle.length < 45) || data.seoMetaTitle.length > 70 
                                     ? "text-red-500" 
                                     : "text-muted-foreground"
                                 }`}>
-                                    {data.seoMetaTitle.length} / 45-60
+                                    {data.seoMetaTitle.length} / 45-70
                                 </span>
                             </div>
                         </div>
